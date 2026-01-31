@@ -96,11 +96,13 @@ func _on_window_selected(index: int) -> void:
 	else:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 		var window_size: Vector2i = preset["size"]
+		print("[OptionsMenu] Setting window size to: ", window_size)
 		DisplayServer.window_set_size(window_size)
 		## Center the window
 		var screen_size: Vector2i = DisplayServer.screen_get_size()
 		var centered_pos: Vector2i = (screen_size - window_size) / 2
 		DisplayServer.window_set_position(centered_pos)
+		print("[OptionsMenu] Window size after set: ", DisplayServer.window_get_size())
 
 
 func _on_back_pressed() -> void:

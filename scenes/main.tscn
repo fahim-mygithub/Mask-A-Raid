@@ -12,7 +12,6 @@ anchor_bottom = 1.0
 color = Color(0.15, 0.1, 0.2, 1)
 
 [node name="GameArea" type="Node2D" parent="." unique_id=2113108269]
-position = Vector2(960, 540)
 
 [node name="DancerPath" type="Path2D" parent="GameArea" unique_id=1598773465]
 

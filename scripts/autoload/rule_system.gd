@@ -17,50 +17,62 @@ func _ready() -> void:
 
 
 func _register_default_rules() -> void:
-	## Register built-in rules with metadata
+	## Register built-in visual rules with metadata
+	## Only rules that can be implemented with current assets
 	all_rules = {
-		"red_mask": {
-			"description": "Devils wear RED masks",
-			"difficulty": 1,
-			"type": "visual",
-		},
-		"horned_mask": {
-			"description": "Devils have HORNS on their masks",
-			"difficulty": 1,
-			"type": "visual",
-		},
 		"striped_pattern": {
 			"description": "Devils have STRIPED patterns",
+			"difficulty": 1,
+			"type": "visual",
+		},
+		"dotted_pattern": {
+			"description": "Devils have DOTTED patterns",
+			"difficulty": 1,
+			"type": "visual",
+		},
+		"diamond_pattern": {
+			"description": "Devils have DIAMOND patterns",
+			"difficulty": 1,
+			"type": "visual",
+		},
+		"triangle_pattern": {
+			"description": "Devils have TRIANGLE patterns",
+			"difficulty": 1,
+			"type": "visual",
+		},
+		"circle_eyes": {
+			"description": "Devils have CIRCLE EYES",
 			"difficulty": 2,
 			"type": "visual",
 		},
-		"sweating": {
-			"description": "Devils SWEAT when you hover over them",
+		"slit_eyes": {
+			"description": "Devils have SLIT EYES",
 			"difficulty": 2,
-			"type": "behavioral",
-		},
-		"adjacent_devils": {
-			"description": "Devils never stand NEXT TO each other",
-			"difficulty": 3,
-			"type": "positional",
+			"type": "visual",
 		},
 	}
-	print("[RuleSystem] Registered ", all_rules.size(), " default rules")
+	print("[RuleSystem] Registered ", all_rules.size(), " visual rules")
 
 
 ## Evaluate a single rule against dancer data
+## Note: With rule-aware mask generation, devils are assigned masks matching the rule
+## This evaluation can be used for verification or behavioral rules
 func _evaluate_rule(rule_id: String, dancer_data: Dictionary) -> bool:
+	var pattern: String = dancer_data.get("pattern_name", "")
+
 	match rule_id:
-		"red_mask":
-			return dancer_data.get("mask_color", "") == "red"
-		"horned_mask":
-			return dancer_data.get("has_horns", false)
 		"striped_pattern":
-			return dancer_data.get("pattern", "") == "striped"
-		"sweating":
-			return dancer_data.get("sweats_on_hover", false)
-		"adjacent_devils":
-			return dancer_data.get("adjacent_to_devil", false) == false
+			return pattern.begins_with("Stripe")
+		"dotted_pattern":
+			return pattern.begins_with("Dot")
+		"diamond_pattern":
+			return pattern.begins_with("Diamond")
+		"triangle_pattern":
+			return pattern.begins_with("Triangle") or pattern == "Triangles"
+		"circle_eyes":
+			return pattern == "CircleEyes"
+		"slit_eyes":
+			return pattern == "SlitEyes"
 		_:
 			print("[RuleSystem] Unknown rule: ", rule_id)
 			return false

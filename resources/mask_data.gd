@@ -4,4 +4,5 @@ class_name MaskData
 
 @export var pattern_name: String = ""
 @export var base_color: Color = Color.WHITE
+@export var pattern_color: Color = Color.WHITE  ## Separate color for pattern overlay
 @export var has_horns: bool = false
