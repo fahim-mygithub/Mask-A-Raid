@@ -1,0 +1,152 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/level_transition.gd" id="1_script"]
+
+[node name="LevelTransition" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.8)
+
+[node name="CompletePanel" type="PanelContainer" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="CompletePanel"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="CompleteTitle" type="Label" parent="CompletePanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "LEVEL COMPLETE!"
+horizontal_alignment = 1
+
+[node name="DevilsFoundLabel" type="Label" parent="CompletePanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Devils Found: 1/1"
+horizontal_alignment = 1
+
+[node name="TimeBonusLabel" type="Label" parent="CompletePanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Time Bonus: +500"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="CompletePanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Score: +1000"
+horizontal_alignment = 1
+
+[node name="ContinueButton" type="Button" parent="CompletePanel/VBox"]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 24
+text = "CONTINUE"
+
+[node name="IntroPanel" type="PanelContainer" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -180.0
+offset_right = 220.0
+offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="IntroPanel"]
+layout_mode = 2
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="LevelNumberLabel" type="Label" parent="IntroPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "LEVEL 1"
+horizontal_alignment = 1
+
+[node name="LevelNameLabel" type="Label" parent="IntroPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "\"Spot the Odd One\""
+horizontal_alignment = 1
+
+[node name="Spacer1" type="Control" parent="IntroPanel/VBox"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="FindLabel" type="Label" parent="IntroPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Find: 1 imposter"
+horizontal_alignment = 1
+
+[node name="TipLabel" type="Label" parent="IntroPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(1, 1, 0.7, 1)
+text = "One mask has a different COLOR!"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="RuleContainer" type="PanelContainer" parent="IntroPanel/VBox"]
+visible = false
+layout_mode = 2
+
+[node name="RuleLabel" type="Label" parent="IntroPanel/VBox/RuleContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 0.6, 0.6, 1)
+text = "Devils have TRIANGLE patterns"
+horizontal_alignment = 1
+
+[node name="Spacer2" type="Control" parent="IntroPanel/VBox"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="StartButton" type="Button" parent="IntroPanel/VBox"]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 24
+text = "START"
+
+[node name="CountdownLabel" type="Label" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -60.0
+offset_right = 100.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 96
+text = "3"
+horizontal_alignment = 1
+vertical_alignment = 1

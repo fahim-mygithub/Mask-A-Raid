@@ -226,3 +226,236 @@ static func get_pattern_count() -> int:
 	if not _patterns_loaded:
 		_load_patterns()
 	return _available_patterns.size()
+
+
+## Generate masks for a specific tell type (used by level system)
+static func generate_masks_for_level(dancer_count: int, devil_indices: Array[int], tell_type: String, pattern_limit: int) -> Array[MaskData]:
+	if not _patterns_loaded:
+		_load_patterns()
+
+	var masks: Array[MaskData] = []
+	var available: Array[String] = []
+	for i in range(mini(pattern_limit, _available_patterns.size())):
+		available.append(_available_patterns[i])
+
+	match tell_type:
+		"color":
+			masks = _generate_color_tell(dancer_count, devil_indices, available)
+		"pattern":
+			masks = _generate_pattern_tell(dancer_count, devil_indices, available)
+		"combo":
+			masks = _generate_combo_tell(dancer_count, devil_indices, available)
+		"category":
+			masks = _generate_category_tell(dancer_count, devil_indices, available)
+		"unique":
+			masks = _generate_unique_tell(dancer_count, devil_indices, available)
+		"shared_triangles":
+			masks = _generate_shared_category_tell(dancer_count, devil_indices, TRIANGLE_PATTERNS)
+		"shared_combo":
+			masks = _generate_shared_combo_tell(dancer_count, devil_indices, available)
+		"subtle":
+			masks = _generate_subtle_tell(dancer_count, devil_indices, available)
+		"shared_color":
+			masks = _generate_shared_color_tell(dancer_count, devil_indices, available)
+		"mixed":
+			masks = _generate_shared_category_tell(dancer_count, devil_indices, STRIPE_PATTERNS)
+		_:
+			masks = _generate_color_tell(dancer_count, devil_indices, available)
+
+	return masks
+
+
+## Level 1: All same pattern, devils have colored pattern
+static func _generate_color_tell(count: int, devils: Array[int], patterns: Array) -> Array[MaskData]:
+	var masks: Array[MaskData] = []
+	var shared_pattern: String = patterns.pick_random() if patterns.size() > 0 else ""
+	var devil_color: Color = IMPOSTER_COLORS.pick_random()
+
+	for i in range(count):
+		var data := MaskData.new()
+		data.pattern_name = shared_pattern
+		data.base_color = Color.WHITE
+		data.has_horns = false
+		data.pattern_color = devil_color if i in devils else Color.WHITE
+		masks.append(data)
+
+	return masks
+
+
+## Level 2: All same color, devils have different pattern
+static func _generate_pattern_tell(count: int, devils: Array[int], patterns: Array) -> Array[MaskData]:
+	var masks: Array[MaskData] = []
+	if patterns.size() < 2:
+		return _generate_color_tell(count, devils, patterns)
+
+	var innocent_pattern: String = patterns[0]
+	var devil_pattern: String = patterns[1]
+
+	for i in range(count):
+		var data := MaskData.new()
+		data.pattern_name = devil_pattern if i in devils else innocent_pattern
+		data.base_color = Color.WHITE
+		data.pattern_color = Color.WHITE
+		data.has_horns = false
+		masks.append(data)
+
+	return masks
+
+
+## Level 3: Mix of colors/patterns, devil has unique combo
+static func _generate_combo_tell(count: int, devils: Array[int], patterns: Array) -> Array[MaskData]:
+	var masks: Array[MaskData] = []
+	var colors: Array[Color] = [Color.WHITE, Color(0.9, 0.9, 1.0), Color(1.0, 0.95, 0.9)]
+	var devil_color: Color = IMPOSTER_COLORS.pick_random()
+	var devil_pattern: String = patterns.pick_random() if patterns.size() > 0 else ""
+
+	for i in range(count):
+		var data := MaskData.new()
+		data.base_color = Color.WHITE
+		data.has_horns = false
+		if i in devils:
+			data.pattern_name = devil_pattern
+			data.pattern_color = devil_color
+		else:
+			data.pattern_name = patterns.pick_random() if patterns.size() > 0 else ""
+			data.pattern_color = colors.pick_random()
+			# Ensure innocents don't match devil combo
+			var attempts := 0
+			while data.pattern_name == devil_pattern and data.pattern_color == devil_color and attempts < 10:
+				data.pattern_name = patterns.pick_random() if patterns.size() > 0 else ""
+				data.pattern_color = colors.pick_random()
+				attempts += 1
+		masks.append(data)
+
+	return masks
+
+
+## Level 4: Devil uses a specific pattern category (diamonds)
+static func _generate_category_tell(count: int, devils: Array[int], patterns: Array) -> Array[MaskData]:
+	var masks: Array[MaskData] = []
+	var devil_category: Array = DIAMOND_PATTERNS
+	var innocent_patterns: Array[String] = []
+	for p in patterns:
+		if p not in devil_category:
+			innocent_patterns.append(p)
+
+	for i in range(count):
+		var data := MaskData.new()
+		data.base_color = Color.WHITE
+		data.pattern_color = Color.WHITE
+		data.has_horns = false
+		if i in devils:
+			var valid: Array[String] = []
+			for p in devil_category:
+				if p in patterns:
+					valid.append(p)
+			data.pattern_name = valid.pick_random() if valid.size() > 0 else patterns.pick_random()
+		else:
+			data.pattern_name = innocent_patterns.pick_random() if innocent_patterns.size() > 0 else patterns.pick_random()
+		masks.append(data)
+
+	return masks
+
+
+## Level 5: Devil has ONE unique attribute
+static func _generate_unique_tell(count: int, devils: Array[int], patterns: Array) -> Array[MaskData]:
+	var masks: Array[MaskData] = []
+	var devil_pattern: String = patterns.pick_random() if patterns.size() > 0 else ""
+	var innocent_patterns: Array[String] = []
+	for p in patterns:
+		if p != devil_pattern:
+			innocent_patterns.append(p)
+
+	for i in range(count):
+		var data := MaskData.new()
+		data.base_color = Color.WHITE
+		data.has_horns = false
+		if i in devils:
+			data.pattern_name = devil_pattern
+			data.pattern_color = IMPOSTER_COLORS.pick_random()
+		else:
+			data.pattern_name = innocent_patterns.pick_random() if innocent_patterns.size() > 0 else patterns.pick_random()
+			data.pattern_color = Color.WHITE
+		masks.append(data)
+
+	return masks
+
+
+## Level 6+: Devils share a pattern category (triangles, stripes, etc)
+static func _generate_shared_category_tell(count: int, devils: Array[int], category: Array) -> Array[MaskData]:
+	var masks: Array[MaskData] = []
+	var valid_devil_patterns: Array[String] = []
+	for p in _available_patterns:
+		if p in category:
+			valid_devil_patterns.append(p)
+
+	var innocent_patterns: Array[String] = []
+	for p in _available_patterns:
+		if p not in category:
+			innocent_patterns.append(p)
+
+	for i in range(count):
+		var data := MaskData.new()
+		data.base_color = Color.WHITE
+		data.pattern_color = Color.WHITE
+		data.has_horns = false
+		if i in devils:
+			data.pattern_name = valid_devil_patterns.pick_random() if valid_devil_patterns.size() > 0 else ""
+		else:
+			data.pattern_name = innocent_patterns.pick_random() if innocent_patterns.size() > 0 else ""
+		masks.append(data)
+
+	return masks
+
+
+## Level 7: Devils share both a pattern AND color
+static func _generate_shared_combo_tell(count: int, devils: Array[int], patterns: Array) -> Array[MaskData]:
+	var masks: Array[MaskData] = []
+	var devil_pattern: String = patterns.pick_random() if patterns.size() > 0 else ""
+	var devil_color: Color = IMPOSTER_COLORS.pick_random()
+
+	for i in range(count):
+		var data := MaskData.new()
+		data.base_color = Color.WHITE
+		data.has_horns = false
+		if i in devils:
+			data.pattern_name = devil_pattern
+			data.pattern_color = devil_color
+		else:
+			data.pattern_name = patterns.pick_random() if patterns.size() > 0 else ""
+			data.pattern_color = Color.WHITE
+		masks.append(data)
+
+	return masks
+
+
+## Level 8: Subtle differences (harder to spot)
+static func _generate_subtle_tell(count: int, devils: Array[int], patterns: Array) -> Array[MaskData]:
+	var masks: Array[MaskData] = []
+	var devil_color := Color(0.95, 0.85, 0.85)  # Subtle pink tint
+
+	for i in range(count):
+		var data := MaskData.new()
+		data.pattern_name = patterns.pick_random() if patterns.size() > 0 else ""
+		data.base_color = Color.WHITE
+		data.has_horns = false
+		data.pattern_color = devil_color if i in devils else Color.WHITE
+		masks.append(data)
+
+	return masks
+
+
+## Level 9: All devils share the same color
+static func _generate_shared_color_tell(count: int, devils: Array[int], patterns: Array) -> Array[MaskData]:
+	var masks: Array[MaskData] = []
+	var devil_color: Color = IMPOSTER_COLORS.pick_random()
+
+	for i in range(count):
+		var data := MaskData.new()
+		data.pattern_name = patterns.pick_random() if patterns.size() > 0 else ""
+		data.base_color = Color.WHITE
+		data.has_horns = false
+		data.pattern_color = devil_color if i in devils else Color.WHITE
+		masks.append(data)
+
+	return masks

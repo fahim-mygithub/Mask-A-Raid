@@ -1,8 +1,9 @@
 extends Node2D
 ## Main game scene - handles gameplay, dancers, and round logic.
 
-## Preload dancer scene
+## Preload scenes
 const DancerScene := preload("res://scenes/dancer.tscn")
+const LevelTransitionScene := preload("res://scenes/level_transition.tscn")
 
 ## Node references
 @onready var dancer_path: Path2D = $GameArea/DancerPath
@@ -19,10 +20,20 @@ const DancerScene := preload("res://scenes/dancer.tscn")
 @onready var quit_to_menu_button: Button = $CanvasLayer/PauseOverlay/PauseMenu/VBox/QuitButton
 @onready var quit_game_button: Button = $CanvasLayer/PauseOverlay/PauseMenu/VBox/QuitGameButton
 
+## Level transition overlay
+var level_transition: LevelTransition = null
+
 ## Dancer tracking
 var dancers: Array[Dancer] = []
 var devils_remaining: int = 0
 var total_devils: int = 0
+
+## Current level config
+var current_config: Dictionary = {}
+
+## Game state
+var is_transitioning: bool = false
+var level_start_score: int = 0
 
 
 func _ready() -> void:
@@ -32,9 +43,6 @@ func _ready() -> void:
 	GameManager.timer_tick.connect(_on_timer_tick)
 	GameManager.score_changed.connect(_on_score_changed)
 	GameManager.timer_expired.connect(_on_timer_expired)
-	GameManager.round_won.connect(_on_round_won)
-	GameManager.game_over.connect(_on_game_over)
-	RuleSystem.rules_changed.connect(_on_rules_changed)
 
 	## Connect pause buttons
 	resume_button.pressed.connect(_on_resume_pressed)
@@ -47,12 +55,21 @@ func _ready() -> void:
 	## Setup ellipse path for dancers
 	_setup_dancer_path()
 
-	## Start the first round
-	_start_round()
+	## Create level transition overlay
+	_setup_level_transition()
+
+	## Show first level intro
+	_show_level_intro()
+
+
+func _setup_level_transition() -> void:
+	level_transition = LevelTransitionScene.instantiate()
+	add_child(level_transition)
+	level_transition.continue_pressed.connect(_on_transition_continue)
+	level_transition.countdown_finished.connect(_on_countdown_finished)
 
 
 func _on_viewport_resized() -> void:
-	## Re-center game area when viewport changes
 	var viewport_size := get_viewport_rect().size
 	var game_area: Node2D = $GameArea
 	game_area.position = viewport_size / 2
@@ -60,13 +77,10 @@ func _on_viewport_resized() -> void:
 
 
 func _setup_dancer_path() -> void:
-	## Center the game area based on viewport size
 	var viewport_size := get_viewport_rect().size
 	var game_area: Node2D = $GameArea
 	game_area.position = viewport_size / 2
 
-	## Create an elliptical path around the center (fire pit area)
-	## Scale ellipse to fit viewport (roughly 40% of viewport width/height)
 	var curve := Curve2D.new()
 	var center := Vector2.ZERO
 	var radius_x := viewport_size.x * 0.28
@@ -81,32 +95,43 @@ func _setup_dancer_path() -> void:
 		)
 		curve.add_point(point)
 
-	## Close the loop
 	curve.add_point(curve.get_point_position(0))
 	dancer_path.curve = curve
 	print("[Main] Dancer path created - viewport: ", viewport_size, " ellipse: ", radius_x, "x", radius_y)
 
 
-func _start_round() -> void:
-	print("[Main] Starting round ", GameManager.current_level)
-
-	## Clear existing dancers
-	_clear_dancers()
-
-	## Level 1 has no rules (pure spot-the-difference)
-	## Later levels use the rule system
-	if GameManager.current_level == 1:
-		RuleSystem.clear_rules()
-		rule_card.visible = false
-	else:
-		RuleSystem.select_rules_for_level(GameManager.current_level)
-		rule_card.visible = true
+func _show_level_intro() -> void:
+	is_transitioning = true
+	current_config = LevelConfig.get_level(GameManager.current_level)
+	level_transition.show_level_intro(GameManager.current_level, current_config)
 
 	## Update HUD
 	level_label.text = "Level " + str(GameManager.current_level)
 	_update_score_display()
 
-	## Spawn dancers
+	## Show/hide rule card based on config
+	if current_config.get("show_rule", false):
+		rule_card.visible = true
+		rule_text.text = current_config.get("rule_text", "")
+	else:
+		rule_card.visible = false
+
+
+func _on_countdown_finished() -> void:
+	is_transitioning = false
+	_start_round()
+
+
+func _start_round() -> void:
+	print("[Main] Starting round ", GameManager.current_level)
+
+	## Store score at level start for calculating level score
+	level_start_score = GameManager.score
+
+	## Clear existing dancers
+	_clear_dancers()
+
+	## Spawn dancers using level config
 	_spawn_dancers()
 
 	## Start the timer
@@ -123,8 +148,11 @@ func _clear_dancers() -> void:
 
 
 func _spawn_dancers() -> void:
-	var dancer_count := _get_dancer_count_for_level()
-	var devil_count := _get_devil_count_for_level()
+	var dancer_count: int = current_config.get("dancers", 5)
+	var devil_count: int = current_config.get("devils", 1)
+	var speed_mult: float = current_config.get("speed", 1.0)
+	var pattern_count: int = current_config.get("pattern_count", 24)
+	var tell_type: String = current_config.get("tell_type", "color")
 
 	## Determine which dancers are devils (random selection)
 	var devil_indices: Array[int] = []
@@ -133,45 +161,36 @@ func _spawn_dancers() -> void:
 		if idx not in devil_indices:
 			devil_indices.append(idx)
 
-	## Level 1: Uniform masks (spot the difference by color)
-	## Later levels: Rule-based pattern differences
-	var is_level_1 := GameManager.current_level == 1
-	var shared_pattern := ""
-	var visual_rule := ""
+	## Generate all masks using the tell type system
+	var masks := MaskGenerator.generate_masks_for_level(dancer_count, devil_indices, tell_type, pattern_count)
 
-	if is_level_1:
-		shared_pattern = MaskGenerator.get_random_pattern()
-		print("[Main] Level 1 - Uniform masks with pattern: ", shared_pattern)
-	else:
-		visual_rule = _get_visual_rule_from_active()
-		print("[Main] Using visual rule for masks: ", visual_rule)
+	print("[Main] Level %d - %d dancers, %d devils, tell: %s" % [GameManager.current_level, dancer_count, devil_count, tell_type])
 
 	## Spawn dancers evenly distributed around the path
 	for i in range(dancer_count):
 		var dancer: Dancer = DancerScene.instantiate()
 		dancer.is_devil = i in devil_indices
+		dancer.movement_speed = 0.08 * speed_mult
 
-		## Generate mask data
-		var mask_data: MaskData
-		if is_level_1:
-			mask_data = MaskGenerator.generate_uniform_mask(dancer.is_devil, shared_pattern)
+		## Apply pre-generated mask
+		if i < masks.size():
+			dancer.mask_data = masks[i]
 		else:
-			mask_data = MaskGenerator.generate_mask_for_rule(dancer.is_devil, visual_rule)
-		dancer.mask_data = mask_data
+			dancer.mask_data = MaskData.new()
 
 		## Connect signals
 		dancer.clicked.connect(_on_dancer_clicked)
 		dancer.hovered.connect(_on_dancer_hovered)
 
-		## Add to path FIRST (PathFollow2D must be child of Path2D before setting progress_ratio)
+		## Add to path
 		dancer_path.add_child(dancer)
 		dancers.append(dancer)
 
-		## Now set progress_ratio (after in scene tree)
+		## Set position on path
 		dancer.progress_ratio = float(i) / dancer_count
 
-		## Apply mask after adding to tree
-		MaskGenerator.apply_mask_to_dancer(dancer, mask_data)
+		## Apply mask visuals
+		MaskGenerator.apply_mask_to_dancer(dancer, dancer.mask_data)
 
 	## Track devils
 	total_devils = devil_count
@@ -181,36 +200,8 @@ func _spawn_dancers() -> void:
 	print("[Main] Spawned ", dancer_count, " dancers, ", devil_count, " devils")
 
 
-## Get the first visual rule from active rules (for mask generation)
-func _get_visual_rule_from_active() -> String:
-	var active := RuleSystem.get_active_rules()
-	for rule_id in active:
-		var rule_data: Dictionary = RuleSystem.get_rule_by_id(rule_id)
-		if rule_data.get("type", "") == "visual":
-			return rule_id
-	# Default to striped_pattern if no visual rule active
-	return "striped_pattern"
-
-
-func _get_dancer_count_for_level() -> int:
-	## Level 1: 5 dancers (4 innocents + 1 imposter)
-	if GameManager.current_level == 1:
-		return 5
-	## Later levels: Start with 6, increase by 1 every 2 levels, max 12
-	return mini(6 + ((GameManager.current_level - 2) / 2), 12)
-
-
-func _get_devil_count_for_level() -> int:
-	## Level 1: Exactly 1 imposter
-	if GameManager.current_level == 1:
-		return 1
-	## Later levels: About 30% devils, minimum 1
-	var count := _get_dancer_count_for_level()
-	return maxi(1, int(count * 0.3))
-
-
 func _on_dancer_clicked(dancer: Dancer) -> void:
-	if dancer.is_revealed:
+	if dancer.is_revealed or is_transitioning:
 		return
 
 	var was_correct := dancer.is_devil
@@ -226,14 +217,13 @@ func _on_dancer_clicked(dancer: Dancer) -> void:
 		if devils_remaining <= 0:
 			print("[Main] All devils found!")
 			GameManager.stop_timer()
-			GameManager.advance_level()
+			_on_level_complete()
 	else:
 		print("[Main] Wrong! That was an innocent dancer!")
 		GameManager.on_wrong_guess()
 
 
-func _on_dancer_hovered(dancer: Dancer, is_hovered: bool) -> void:
-	## Could add UI feedback here (e.g., cursor change, tooltip)
+func _on_dancer_hovered(_dancer: Dancer, _is_hovered: bool) -> void:
 	pass
 
 
@@ -242,8 +232,8 @@ func _update_devils_counter() -> void:
 	devils_counter.text = "Devils: " + str(found) + "/" + str(total_devils)
 
 
-func _input(event: InputEvent) -> void:
-	if Input.is_action_just_pressed("pause"):
+func _input(_event: InputEvent) -> void:
+	if Input.is_action_just_pressed("pause") and not is_transitioning:
 		_toggle_pause()
 
 
@@ -283,11 +273,9 @@ func _on_quit_game_pressed() -> void:
 
 
 func _on_timer_tick(time_remaining: float) -> void:
-	## Update timer bar
 	var progress := (time_remaining / GameManager.round_duration) * 100.0
 	timer_bar.value = progress
 
-	## Change color based on urgency
 	if progress < 25:
 		timer_bar.modulate = Color.RED
 	elif progress < 50:
@@ -296,7 +284,7 @@ func _on_timer_tick(time_remaining: float) -> void:
 		timer_bar.modulate = Color.GREEN
 
 
-func _on_score_changed(new_score: int) -> void:
+func _on_score_changed(_new_score: int) -> void:
 	_update_score_display()
 
 
@@ -304,28 +292,43 @@ func _update_score_display() -> void:
 	score_label.text = "Score: " + str(GameManager.score)
 
 
-func _on_rules_changed(active_rules: Array) -> void:
-	var descriptions := RuleSystem.get_rule_descriptions()
-	if descriptions.is_empty():
-		rule_text.text = "No rules active"
-	else:
-		rule_text.text = "\n".join(descriptions)
-
-
 func _on_timer_expired() -> void:
 	print("[Main] Timer expired - round failed")
-	## TODO: Handle round failure (show remaining devils, restart or game over)
-	_on_game_over()
-
-
-func _on_round_won() -> void:
-	print("[Main] Round won!")
-	## TODO: Show victory animation, then start next round
-	_start_round()
-
-
-func _on_game_over() -> void:
-	print("[Main] Game over!")
+	is_transitioning = true
+	## Reveal remaining devils
+	for dancer in dancers:
+		if dancer.is_devil and not dancer.is_revealed:
+			dancer.reveal(true)
+	## Wait a moment then go to game over
+	await get_tree().create_timer(2.0).timeout
 	GameManager.end_game()
-	## TODO: Transition to game over screen
 	get_tree().change_scene_to_file("res://scenes/game_over.tscn")
+
+
+func _on_level_complete() -> void:
+	is_transitioning = true
+
+	## Calculate scores
+	var time_bonus := int(GameManager.time_remaining * 25)
+	var level_score := GameManager.score - level_start_score + time_bonus
+
+	## Add time bonus
+	GameManager.add_score(time_bonus)
+
+	## Check if this was the final level
+	if LevelConfig.is_final_level(GameManager.current_level):
+		print("[Main] Game complete! You win!")
+		await get_tree().create_timer(1.0).timeout
+		get_tree().change_scene_to_file("res://scenes/you_win.tscn")
+	else:
+		## Show level complete overlay
+		level_transition.show_level_complete(total_devils, total_devils, time_bonus, level_score)
+
+
+func _on_transition_continue() -> void:
+	## Advance to next level
+	GameManager.current_level += 1
+	print("[Main] Advancing to level ", GameManager.current_level)
+
+	## Show next level intro
+	_show_level_intro()
