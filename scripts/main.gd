@@ -1,6 +1,9 @@
 extends Node2D
 ## Main game scene - handles gameplay, dancers, and round logic.
 
+## Preload dancer scene
+const DancerScene := preload("res://scenes/dancer.tscn")
+
 ## Node references
 @onready var dancer_path: Path2D = $GameArea/DancerPath
 @onready var dancers_container: Node2D = $GameArea/DancersContainer
@@ -14,6 +17,11 @@ extends Node2D
 @onready var resume_button: Button = $CanvasLayer/PauseOverlay/PauseMenu/VBox/ResumeButton
 @onready var quit_to_menu_button: Button = $CanvasLayer/PauseOverlay/PauseMenu/VBox/QuitButton
 @onready var quit_game_button: Button = $CanvasLayer/PauseOverlay/PauseMenu/VBox/QuitGameButton
+
+## Dancer tracking
+var dancers: Array[Dancer] = []
+var devils_remaining: int = 0
+var total_devils: int = 0
 
 
 func _ready() -> void:
@@ -64,6 +72,9 @@ func _setup_dancer_path() -> void:
 func _start_round() -> void:
 	print("[Main] Starting round ", GameManager.current_level)
 
+	## Clear existing dancers
+	_clear_dancers()
+
 	## Select rules for this level
 	RuleSystem.select_rules_for_level(GameManager.current_level)
 
@@ -71,17 +82,106 @@ func _start_round() -> void:
 	level_label.text = "Level " + str(GameManager.current_level)
 	_update_score_display()
 
+	## Spawn dancers
+	_spawn_dancers()
+
 	## Start the timer
 	GameManager.start_timer()
 
-	## TODO: Spawn dancers based on level parameters
-	_spawn_placeholder_message()
+
+func _clear_dancers() -> void:
+	for dancer in dancers:
+		if is_instance_valid(dancer):
+			dancer.queue_free()
+	dancers.clear()
+	devils_remaining = 0
+	total_devils = 0
 
 
-func _spawn_placeholder_message() -> void:
-	## Temporary: Show placeholder until dancer system is implemented
-	devils_counter.text = "Devils: ?/?"
-	print("[Main] Dancer spawning not yet implemented")
+func _spawn_dancers() -> void:
+	var dancer_count := _get_dancer_count_for_level()
+	var devil_count := _get_devil_count_for_level()
+
+	## Determine which dancers are devils (random selection)
+	var devil_indices: Array[int] = []
+	while devil_indices.size() < devil_count:
+		var idx := randi() % dancer_count
+		if idx not in devil_indices:
+			devil_indices.append(idx)
+
+	## Spawn dancers evenly distributed around the path
+	for i in range(dancer_count):
+		var dancer: Dancer = DancerScene.instantiate()
+		dancer.is_devil = i in devil_indices
+
+		## Generate mask data
+		var mask_data := MaskGenerator.generate_mask(dancer.is_devil)
+		dancer.mask_data = mask_data
+
+		## Connect signals
+		dancer.clicked.connect(_on_dancer_clicked)
+		dancer.hovered.connect(_on_dancer_hovered)
+
+		## Add to path FIRST (PathFollow2D must be child of Path2D before setting progress_ratio)
+		dancer_path.add_child(dancer)
+		dancers.append(dancer)
+
+		## Now set progress_ratio (after in scene tree)
+		dancer.progress_ratio = float(i) / dancer_count
+
+		## Apply mask after adding to tree
+		MaskGenerator.apply_mask_to_dancer(dancer, mask_data)
+
+	## Track devils
+	total_devils = devil_count
+	devils_remaining = devil_count
+	_update_devils_counter()
+
+	print("[Main] Spawned ", dancer_count, " dancers, ", devil_count, " devils")
+
+
+func _get_dancer_count_for_level() -> int:
+	## Start with 5, increase by 1 every 2 levels, max 12
+	return mini(5 + (GameManager.current_level / 2), 12)
+
+
+func _get_devil_count_for_level() -> int:
+	## About 30% devils, minimum 1
+	var count := _get_dancer_count_for_level()
+	return maxi(1, int(count * 0.3))
+
+
+func _on_dancer_clicked(dancer: Dancer) -> void:
+	if dancer.is_revealed:
+		return
+
+	var was_correct := dancer.is_devil
+	dancer.reveal(was_correct)
+
+	if was_correct:
+		print("[Main] Correct! Found a devil!")
+		GameManager.on_correct_guess()
+		devils_remaining -= 1
+		_update_devils_counter()
+
+		## Check win condition
+		if devils_remaining <= 0:
+			print("[Main] All devils found!")
+			GameManager.stop_timer()
+			GameManager.advance_level()
+	else:
+		print("[Main] Wrong! That was an innocent dancer!")
+		GameManager.on_wrong_guess()
+
+
+func _on_dancer_hovered(dancer: Dancer, is_hovered: bool) -> void:
+	## Could add UI feedback here (e.g., cursor change, tooltip)
+	pass
+
+
+func _update_devils_counter() -> void:
+	var found := total_devils - devils_remaining
+	devils_counter.text = "Devils: " + str(found) + "/" + str(total_devils)
 
 
 func _input(event: InputEvent) -> void:
