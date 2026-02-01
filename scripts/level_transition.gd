@@ -1,9 +1,8 @@
 extends CanvasLayer
 class_name LevelTransition
-## Handles level complete and level intro overlays.
+## Handles smooth level transitions with animated overlays.
 
 signal continue_pressed
-signal start_pressed
 signal countdown_finished
 
 @onready var background: ColorRect = $Background
@@ -15,7 +14,6 @@ signal countdown_finished
 @onready var devils_found_label: Label = $CompletePanel/VBox/DevilsFoundLabel
 @onready var time_bonus_label: Label = $CompletePanel/VBox/TimeBonusLabel
 @onready var score_label: Label = $CompletePanel/VBox/ScoreLabel
-@onready var continue_button: Button = $CompletePanel/VBox/ContinueButton
 
 @onready var level_number_label: Label = $IntroPanel/VBox/LevelNumberLabel
 @onready var level_name_label: Label = $IntroPanel/VBox/LevelNameLabel
@@ -23,16 +21,13 @@ signal countdown_finished
 @onready var tip_label: Label = $IntroPanel/VBox/TipLabel
 @onready var rule_container: PanelContainer = $IntroPanel/VBox/RuleContainer
 @onready var rule_label: Label = $IntroPanel/VBox/RuleContainer/RuleLabel
-@onready var start_button: Button = $IntroPanel/VBox/StartButton
 
 var auto_continue_timer: float = 0.0
-const AUTO_CONTINUE_DELAY: float = 3.0
+const AUTO_CONTINUE_DELAY: float = 2.5
 
 
 func _ready() -> void:
 	hide_all()
-	continue_button.pressed.connect(_on_continue_pressed)
-	start_button.pressed.connect(_on_start_pressed)
 
 
 func _process(delta: float) -> void:
@@ -57,42 +52,70 @@ func show_level_complete(devils_found: int, total_devils: int, time_bonus: int, 
 	time_bonus_label.text = "Time Bonus: +%d" % time_bonus
 	score_label.text = "Score: +%d" % level_score
 	complete_panel.visible = true
-	continue_button.grab_focus()
 	auto_continue_timer = AUTO_CONTINUE_DELAY
 
 
+## Show smooth level intro with automatic countdown (no start button)
 func show_level_intro(level_num: int, config: Dictionary) -> void:
 	hide_all()
 	background.visible = true
+	background.modulate.a = 0.8
+
+	## Setup level info
 	level_number_label.text = "LEVEL %d" % level_num
 	level_name_label.text = "\"%s\"" % config.get("name", "")
 
-	var devil_count: int = config.get("devils", 1)
-	find_label.text = "Find: %d imposter%s" % [devil_count, "s" if devil_count > 1 else ""]
-	tip_label.text = config.get("tip", "")
-
+	## Show tip/rule for this level
+	find_label.visible = false
 	if config.get("show_rule", false):
-		rule_label.text = config.get("rule_text", "")
-		rule_container.visible = true
+		tip_label.text = "Rule: " + config.get("rule_text", "")
+		tip_label.visible = true
 	else:
-		rule_container.visible = false
+		tip_label.text = config.get("tip", "")
+		tip_label.visible = true
+	rule_container.visible = false
 
+	## Show intro panel with level info
 	intro_panel.visible = true
-	start_button.grab_focus()
+
+	## Auto-start countdown after showing level info
+	_start_smooth_countdown()
 
 
+## Smooth countdown: Show level info → 2 → 1 → GO!
+func _start_smooth_countdown() -> void:
+	var tween := create_tween()
+
+	## Show level info for 1.5 seconds
+	tween.tween_interval(1.5)
+
+	## Transition to countdown
+	tween.tween_callback(func():
+		intro_panel.visible = false
+		countdown_label.visible = true
+		countdown_label.text = "2"
+	)
+
+	## Countdown: 2 → 1 → GO!
+	tween.tween_interval(0.7)
+	tween.tween_callback(func(): countdown_label.text = "1")
+	tween.tween_interval(0.7)
+	tween.tween_callback(func(): countdown_label.text = "GO!")
+	tween.tween_interval(0.4)
+	tween.tween_callback(_on_countdown_finished)
+
+
+## Legacy method for manual start (kept for compatibility)
 func show_countdown() -> void:
 	hide_all()
 	background.visible = true
 	countdown_label.visible = true
-	countdown_label.text = "3"
+	countdown_label.text = "2"
 
 	var tween := create_tween()
-	tween.tween_interval(0.8)
-	tween.tween_callback(func(): countdown_label.text = "2")
-	tween.tween_interval(0.8)
+	tween.tween_interval(0.7)
 	tween.tween_callback(func(): countdown_label.text = "1")
-	tween.tween_interval(0.8)
+	tween.tween_interval(0.7)
 	tween.tween_callback(func(): countdown_label.text = "GO!")
 	tween.tween_interval(0.4)
 	tween.tween_callback(_on_countdown_finished)
@@ -102,11 +125,6 @@ func _on_continue_pressed() -> void:
 	auto_continue_timer = 0.0
 	hide_all()
 	continue_pressed.emit()
-
-
-func _on_start_pressed() -> void:
-	hide_all()
-	show_countdown()
 
 
 func _on_countdown_finished() -> void:

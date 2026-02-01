@@ -32,7 +32,7 @@ const SCORE_WRONG: int = -50
 var score: int = 0
 
 ## Time penalty configuration
-@export var time_penalty: float = 5.0  ## Seconds lost on wrong guess
+@export var time_penalty: float = 20.0  ## Seconds lost on wrong guess
 
 ## Level tracking
 var current_level: int = 1

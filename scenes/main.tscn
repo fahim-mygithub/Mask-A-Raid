@@ -1,8 +1,11 @@
-[gd_scene format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Texture2D" path="res://assets/ingame_scene_assets/mask_a_raid_background_gameqlay_no_fire_ground.jpg" id="2_bg"]
 [ext_resource type="Texture2D" path="res://assets/ingame_scene_assets/mask_a_raid_background_gameqlay_trees.png" id="3_trees"]
+[ext_resource type="FontFile" path="res://assets/font/Papyrus.ttf" id="4_papyrus"]
+[ext_resource type="PackedScene" path="res://scenes/ui/corner_box.tscn" id="5_corner_box"]
+[ext_resource type="Texture2D" path="res://assets/ingame_scene_assets/Corner_Box.png" id="6_corner_texture"]
 
 [node name="Main" type="Node2D" unique_id=535886802]
 script = ExtResource("1_main")
@@ -37,6 +40,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="TopBar" type="HBoxContainer" parent="CanvasLayer/HUD" unique_id=387256289]
+visible = false
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -52,54 +56,147 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Level 1"
 
-[node name="TimerBar" type="ProgressBar" parent="CanvasLayer/HUD/TopBar" unique_id=1574163337]
-custom_minimum_size = Vector2(400, 0)
+[node name="Spacer" type="Control" parent="CanvasLayer/HUD/TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3
-value = 100.0
-show_percentage = false
 
 [node name="ScoreLabel" type="Label" parent="CanvasLayer/HUD/TopBar" unique_id=1484125045]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Score: 0"
 
-[node name="RuleCard" type="PanelContainer" parent="CanvasLayer/HUD" unique_id=1583169469]
+[node name="TimerLabel" type="Label" parent="CanvasLayer/HUD" unique_id=1574163337]
 layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 10.0
+offset_right = 100.0
+offset_bottom = 90.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("4_papyrus")
+theme_override_font_sizes/font_size = 72
+text = "1:20"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RuleCornerBox" type="Control" parent="CanvasLayer/HUD" unique_id=1583169469]
+layout_mode = 1
+anchors_preset = 0
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 280.0
+offset_bottom = 280.0
+
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer/HUD/RuleCornerBox"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = -120.0
-offset_right = 350.0
-offset_bottom = -20.0
-grow_vertical = 0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("6_corner_texture")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="VBox" type="VBoxContainer" parent="CanvasLayer/HUD/RuleCard" unique_id=1222852150]
-layout_mode = 2
+[node name="ContentMargin" type="MarginContainer" parent="CanvasLayer/HUD/RuleCornerBox/TextureRect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 80
+theme_override_constants/margin_bottom = 100
 
-[node name="RuleTitle" type="Label" parent="CanvasLayer/HUD/RuleCard/VBox" unique_id=2071119890]
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer/HUD/RuleCornerBox/TextureRect/ContentMargin"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Current Rule:"
+theme_override_constants/separation = 4
 
-[node name="RuleText" type="Label" parent="CanvasLayer/HUD/RuleCard/VBox" unique_id=2042169031]
+[node name="RuleTitle" type="Label" parent="CanvasLayer/HUD/RuleCornerBox/TextureRect/ContentMargin/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "Devils wear RED masks"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("4_papyrus")
+theme_override_font_sizes/font_size = 22
+text = "Everyone has"
+
+[node name="RuleText" type="Label" parent="CanvasLayer/HUD/RuleCornerBox/TextureRect/ContentMargin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("4_papyrus")
+theme_override_font_sizes/font_size = 18
+text = "4 Dots
+2 Stripes"
 autowrap_mode = 2
 
-[node name="DevilsCounter" type="Label" parent="CanvasLayer/HUD" unique_id=1529858331]
+[node name="DevilsCornerBox" type="Control" parent="CanvasLayer/HUD" unique_id=1529858331]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -200.0
-offset_top = 80.0
-offset_bottom = 120.0
+offset_left = -280.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 280.0
 grow_horizontal = 0
-theme_override_font_sizes/font_size = 24
-text = "Devils: 0/0"
+
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer/HUD/DevilsCornerBox"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("6_corner_texture")
+expand_mode = 1
+stretch_mode = 5
+flip_h = true
+
+[node name="ContentMargin" type="MarginContainer" parent="CanvasLayer/HUD/DevilsCornerBox/TextureRect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 80
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 100
+
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer/HUD/DevilsCornerBox/TextureRect/ContentMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 2
+
+[node name="DevilsTitle" type="Label" parent="CanvasLayer/HUD/DevilsCornerBox/TextureRect/ContentMargin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("4_papyrus")
+theme_override_font_sizes/font_size = 22
+text = "Imposters"
+horizontal_alignment = 2
+
+[node name="DevilsCounter" type="Label" parent="CanvasLayer/HUD/DevilsCornerBox/TextureRect/ContentMargin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("4_papyrus")
+theme_override_font_sizes/font_size = 18
+text = "Left: 1"
 horizontal_alignment = 2
 
 [node name="PauseOverlay" type="ColorRect" parent="CanvasLayer" unique_id=1909847211]

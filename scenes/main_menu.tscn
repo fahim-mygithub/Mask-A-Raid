@@ -5,6 +5,8 @@
 [ext_resource type="PackedScene" path="res://scenes/options_menu.tscn" id="3_options"]
 [ext_resource type="Texture2D" uid="uid://qp2hxlgu0u1f" path="res://assets/title_screen-assets/Help_Menu.png" id="4_help"]
 [ext_resource type="Texture2D" uid="uid://b33cthvxellby" path="res://assets/title_screen-assets/title_fire_only.jpg" id="5_fire_bg"]
+[ext_resource type="Theme" path="res://themes/tribal_button_theme.tres" id="6_tribal_theme"]
+[ext_resource type="FontFile" path="res://assets/font/Papyrus.ttf" id="7_papyrus"]
 
 [node name="root" type="Control" unique_id=790012264]
 layout_mode = 3
@@ -53,31 +55,52 @@ grow_vertical = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="ContentContainer" unique_id=965424628]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 8
 
 [node name="PlayButton" type="Button" parent="ContentContainer/VBoxContainer" unique_id=2000181340]
-custom_minimum_size = Vector2(200, 50)
+custom_minimum_size = Vector2(220, 45)
 layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("6_tribal_theme")
+theme_override_fonts/font = ExtResource("7_papyrus")
 theme_override_font_sizes/font_size = 28
-text = "Play"
+text = "PLAY"
 
 [node name="OptionsButton" type="Button" parent="ContentContainer/VBoxContainer" unique_id=1260498720]
-custom_minimum_size = Vector2(200, 50)
+custom_minimum_size = Vector2(220, 45)
 layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("6_tribal_theme")
+theme_override_fonts/font = ExtResource("7_papyrus")
 theme_override_font_sizes/font_size = 28
-text = "Options"
+text = "SETTINGS"
 
 [node name="InstructionsButton" type="Button" parent="ContentContainer/VBoxContainer" unique_id=1448220368]
-custom_minimum_size = Vector2(200, 50)
+custom_minimum_size = Vector2(220, 45)
 layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("6_tribal_theme")
+theme_override_fonts/font = ExtResource("7_papyrus")
 theme_override_font_sizes/font_size = 28
-text = "Instructions"
+text = "INSTRUCTIONS"
+
+[node name="CreditsButton" type="Button" parent="ContentContainer/VBoxContainer" unique_id=1448220369]
+custom_minimum_size = Vector2(220, 45)
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("6_tribal_theme")
+theme_override_fonts/font = ExtResource("7_papyrus")
+theme_override_font_sizes/font_size = 28
+text = "CREDITS"
 
 [node name="QuitButton" type="Button" parent="ContentContainer/VBoxContainer" unique_id=132194174]
-custom_minimum_size = Vector2(200, 50)
+custom_minimum_size = Vector2(220, 45)
 layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("6_tribal_theme")
+theme_override_fonts/font = ExtResource("7_papyrus")
 theme_override_font_sizes/font_size = 28
-text = "Quit"
+text = "ALOHA"
 
 [node name="OptionsMenu" parent="." unique_id=1248659011 instance=ExtResource("3_options")]
 visible = false
@@ -116,11 +139,72 @@ stretch_mode = 5
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 size_flags_horizontal = 4
+theme = ExtResource("6_tribal_theme")
+theme_override_fonts/font = ExtResource("7_papyrus")
+theme_override_font_sizes/font_size = 28
+text = "CLOSE"
+
+[node name="CreditsPopup" type="ColorRect" parent="." unique_id=757943676]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.9)
+
+[node name="CenterContainer" type="CenterContainer" parent="CreditsPopup"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="CreditsPopup/CenterContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="CreditsTitle" type="Label" parent="CreditsPopup/CenterContainer/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("7_papyrus")
+theme_override_font_sizes/font_size = 48
+theme_override_colors/font_color = Color(0.85, 0.6, 0.2, 1)
+text = "Credits"
+horizontal_alignment = 1
+
+[node name="CreditsText" type="Label" parent="CreditsPopup/CenterContainer/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("7_papyrus")
 theme_override_font_sizes/font_size = 24
-text = "Close"
+theme_override_colors/font_color = Color(0.9, 0.8, 0.6, 1)
+text = "Game Design & Programming
+Team Mask-A-Raid
+
+Art & Assets
+Custom Hand-Drawn Art
+
+Music & Sound
+Original Soundtrack
+
+Made for Global Game Jam 2025
+Theme: Mask"
+horizontal_alignment = 1
+
+[node name="CloseButton" type="Button" parent="CreditsPopup/CenterContainer/VBox"]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("6_tribal_theme")
+theme_override_fonts/font = ExtResource("7_papyrus")
+theme_override_font_sizes/font_size = 28
+text = "CLOSE"
 
 [connection signal="pressed" from="ContentContainer/VBoxContainer/PlayButton" to="." method="_on_play_pressed"]
 [connection signal="pressed" from="ContentContainer/VBoxContainer/OptionsButton" to="." method="_on_options_pressed"]
 [connection signal="pressed" from="ContentContainer/VBoxContainer/InstructionsButton" to="." method="_on_instructions_pressed"]
+[connection signal="pressed" from="ContentContainer/VBoxContainer/CreditsButton" to="." method="_on_credits_pressed"]
 [connection signal="pressed" from="ContentContainer/VBoxContainer/QuitButton" to="." method="_on_quit_pressed"]
 [connection signal="pressed" from="InstructionsPopup/CenterContainer/VBox/CloseButton" to="." method="_on_instructions_close"]
+[connection signal="pressed" from="CreditsPopup/CenterContainer/VBox/CloseButton" to="." method="_on_credits_close"]

@@ -5,9 +5,11 @@ extends Control
 @onready var play_button: Button = $ContentContainer/VBoxContainer/PlayButton
 @onready var options_button: Button = $ContentContainer/VBoxContainer/OptionsButton
 @onready var instructions_button: Button = $ContentContainer/VBoxContainer/InstructionsButton
+@onready var credits_button: Button = $ContentContainer/VBoxContainer/CreditsButton
 @onready var quit_button: Button = $ContentContainer/VBoxContainer/QuitButton
 @onready var options_menu: Control = $OptionsMenu
 @onready var instructions_popup: ColorRect = $InstructionsPopup
+@onready var credits_popup: ColorRect = $CreditsPopup
 
 
 func _ready() -> void:
@@ -58,6 +60,17 @@ func _on_instructions_close() -> void:
 	print("[MainMenu] Instructions closed")
 	instructions_popup.visible = false
 	instructions_button.grab_focus()
+
+
+func _on_credits_pressed() -> void:
+	print("[MainMenu] Credits pressed")
+	credits_popup.visible = true
+
+
+func _on_credits_close() -> void:
+	print("[MainMenu] Credits closed")
+	credits_popup.visible = false
+	credits_button.grab_focus()
 
 
 func _on_quit_pressed() -> void:

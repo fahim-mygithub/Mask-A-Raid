@@ -13,12 +13,14 @@ const FireAnimationLoaderScript := preload("res://scripts/autoload/fire_animatio
 @onready var dancers_container: Node2D = $GameArea/DancersContainer
 @onready var fire_pit: Node2D = $GameArea/FirePit
 @onready var hud: Control = $CanvasLayer/HUD
-@onready var timer_bar: ProgressBar = $CanvasLayer/HUD/TopBar/TimerBar
+@onready var timer_label: Label = $CanvasLayer/HUD/TimerLabel
 @onready var score_label: Label = $CanvasLayer/HUD/TopBar/ScoreLabel
 @onready var level_label: Label = $CanvasLayer/HUD/TopBar/LevelLabel
-@onready var rule_card: Control = $CanvasLayer/HUD/RuleCard
-@onready var rule_text: Label = $CanvasLayer/HUD/RuleCard/VBox/RuleText
-@onready var devils_counter: Label = $CanvasLayer/HUD/DevilsCounter
+@onready var rule_corner_box: Control = $CanvasLayer/HUD/RuleCornerBox
+@onready var rule_title: Label = $CanvasLayer/HUD/RuleCornerBox/TextureRect/ContentMargin/VBox/RuleTitle
+@onready var rule_text: Label = $CanvasLayer/HUD/RuleCornerBox/TextureRect/ContentMargin/VBox/RuleText
+@onready var devils_corner_box: Control = $CanvasLayer/HUD/DevilsCornerBox
+@onready var devils_counter: Label = $CanvasLayer/HUD/DevilsCornerBox/TextureRect/ContentMargin/VBox/DevilsCounter
 @onready var pause_overlay: ColorRect = $CanvasLayer/PauseOverlay
 @onready var resume_button: Button = $CanvasLayer/PauseOverlay/PauseMenu/VBox/ResumeButton
 @onready var quit_to_menu_button: Button = $CanvasLayer/PauseOverlay/PauseMenu/VBox/QuitButton
@@ -184,12 +186,15 @@ func _show_level_intro() -> void:
 	level_label.text = "Level " + str(GameManager.current_level)
 	_update_score_display()
 
-	## Show/hide rule card based on config
+	## Always show rule corner box with level tip
+	rule_corner_box.visible = true
 	if current_config.get("show_rule", false):
-		rule_card.visible = true
+		rule_title.text = "Rule:"
 		rule_text.text = current_config.get("rule_text", "")
 	else:
-		rule_card.visible = false
+		## Show tip when no specific rule
+		rule_title.text = "Tip:"
+		rule_text.text = current_config.get("tip", "Find the imposters!")
 
 
 func _on_countdown_finished() -> void:
@@ -303,8 +308,7 @@ func _on_dancer_hovered(_dancer: Dancer, _is_hovered: bool) -> void:
 
 
 func _update_devils_counter() -> void:
-	var found := total_devils - devils_remaining
-	devils_counter.text = "Devils: " + str(found) + "/" + str(total_devils)
+	devils_counter.text = "Left: " + str(devils_remaining)
 
 
 func _input(_event: InputEvent) -> void:
@@ -348,15 +352,18 @@ func _on_quit_game_pressed() -> void:
 
 
 func _on_timer_tick(time_remaining: float) -> void:
-	var progress := (time_remaining / GameManager.round_duration) * 100.0
-	timer_bar.value = progress
+	## Format time as M:SS
+	var total_seconds := int(time_remaining)
+	@warning_ignore("integer_division")
+	var minutes := total_seconds / 60
+	var seconds := total_seconds % 60
+	timer_label.text = "%d:%02d" % [minutes, seconds]
 
-	if progress < 25:
-		timer_bar.modulate = Color.RED
-	elif progress < 50:
-		timer_bar.modulate = Color.YELLOW
+	## Change color to red in last 10 seconds
+	if time_remaining <= 10.0:
+		timer_label.modulate = Color.RED
 	else:
-		timer_bar.modulate = Color.GREEN
+		timer_label.modulate = Color.WHITE
 
 
 func _on_score_changed(_new_score: int) -> void:
