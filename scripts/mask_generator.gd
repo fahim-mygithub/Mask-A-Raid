@@ -13,6 +13,15 @@ const DIAMOND_PATTERNS := ["Diamond1", "Diamond2", "Diamond3", "Diamond4"]
 const TRIANGLE_PATTERNS := ["Triangle1", "Triangle2", "Triangle3", "Triangle4", "Triangles"]
 const EYE_PATTERNS := ["CircleEyes", "Cross Eyes", "SlitEyes"]
 
+## Hardcoded pattern list for web export compatibility (DirAccess doesn't work in web builds)
+const ALL_PATTERNS := [
+	"CircleEyes", "Cross Eyes", "SlitEyes",
+	"Diamond1", "Diamond2", "Diamond3", "Diamond4",
+	"Dot1", "Dot2", "Dot3", "Dot4",
+	"Stripe1", "Stripe2", "Stripe3", "Stripe4", "Stripe5", "Stripe6", "Stripe7", "Stripe8",
+	"Triangle1", "Triangle2", "Triangle3", "Triangle4", "Triangles"
+]
+
 static var _available_patterns: Array[String] = []
 static var _patterns_loaded: bool = false
 
@@ -21,19 +30,10 @@ static func _load_patterns() -> void:
 	if _patterns_loaded:
 		return
 
+	# Use hardcoded list instead of DirAccess (web export compatible)
 	_available_patterns.clear()
-	var dir := DirAccess.open(PATTERNS_PATH)
-	if dir:
-		dir.list_dir_begin()
-		var file_name := dir.get_next()
-		while file_name != "":
-			if not dir.current_is_dir():
-				var lower_name := file_name.to_lower()
-				if lower_name.ends_with(".png"):
-					# Store the basename without extension
-					_available_patterns.append(file_name.get_basename())
-			file_name = dir.get_next()
-		dir.list_dir_end()
+	for pattern in ALL_PATTERNS:
+		_available_patterns.append(pattern)
 
 	_patterns_loaded = true
 	print("[MaskGenerator] Loaded ", _available_patterns.size(), " patterns: ", _available_patterns)

@@ -24,10 +24,20 @@ static func _load_frames() -> void:
 	_sprite_frames.set_animation_loop("dance", true)
 	_sprite_frames.set_animation_speed("dance", 12.0)
 
-	# Load the full image from disk (not as a GPU texture)
-	var image := Image.load_from_file(ProjectSettings.globalize_path(SPRITESHEET_PATH))
-	if not image:
-		push_error("[DanceAnimationLoader] Failed to load spritesheet from: ", SPRITESHEET_PATH)
+	# Load image directly via FileAccess (works in web exports, avoids GPU texture size limit)
+	var file := FileAccess.open(SPRITESHEET_PATH, FileAccess.READ)
+	if not file:
+		push_error("[DanceAnimationLoader] Failed to open spritesheet file: ", SPRITESHEET_PATH)
+		_is_loaded = true
+		return
+
+	var buffer := file.get_buffer(file.get_length())
+	file.close()
+
+	var image := Image.new()
+	var error := image.load_png_from_buffer(buffer)
+	if error != OK:
+		push_error("[DanceAnimationLoader] Failed to decode PNG: ", error)
 		_is_loaded = true
 		return
 
