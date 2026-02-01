@@ -21,6 +21,11 @@ var current_state: State = State.MENU
 var time_remaining: float = 0.0
 var timer_active: bool = false
 
+## Custom cursor textures
+var cursor_normal: Texture2D
+var cursor_hover: Texture2D
+var cursor_hotspot: Vector2 = Vector2(16, 16)  ## Center of 32x32 cursor
+
 ## Scoring configuration
 const SCORE_CORRECT: int = 100
 const SCORE_WRONG: int = -50
@@ -44,6 +49,77 @@ const VALID_TRANSITIONS: Dictionary = {
 func _ready() -> void:
 	print("[GameManager] Initialized")
 	print("[GameManager] Initial state: ", State.keys()[current_state])
+	_load_custom_cursors()
+
+
+func _load_custom_cursors() -> void:
+	cursor_normal = load("res://assets/cursor_asset/Target_Cursor.png")
+	cursor_hover = load("res://assets/cursor_asset/Target_Cursor_Outlined.png")
+
+	if cursor_normal:
+		## Set hotspot to center of cursor (assuming 32x32 cursor)
+		cursor_hotspot = Vector2(cursor_normal.get_width() / 2.0, cursor_normal.get_height() / 2.0)
+		Input.set_custom_mouse_cursor(cursor_normal, Input.CURSOR_ARROW, cursor_hotspot)
+		print("[GameManager] Custom cursor loaded: ", cursor_normal.get_size())
+	else:
+		push_warning("[GameManager] Failed to load custom cursor")
+
+	## Connect to scene tree to auto-setup buttons (for future nodes)
+	get_tree().node_added.connect(_on_node_added)
+
+	## Scan existing buttons after a frame (scene is loaded)
+	await get_tree().process_frame
+	_scan_all_buttons()
+
+
+func _scan_all_buttons() -> void:
+	## Find and setup all existing buttons in the scene tree
+	var buttons := _find_all_buttons(get_tree().root)
+	for button in buttons:
+		_setup_button_cursor(button)
+	print("[GameManager] Connected cursor to %d buttons" % buttons.size())
+
+
+func _find_all_buttons(node: Node) -> Array[BaseButton]:
+	var buttons: Array[BaseButton] = []
+	if node is BaseButton:
+		buttons.append(node as BaseButton)
+	for child in node.get_children():
+		buttons.append_array(_find_all_buttons(child))
+	return buttons
+
+
+func _on_node_added(node: Node) -> void:
+	## Auto-connect cursor hover for buttons
+	if node is BaseButton:
+		_setup_button_cursor(node as BaseButton)
+
+
+func _setup_button_cursor(button: BaseButton) -> void:
+	## Connect mouse enter/exit signals for cursor change
+	if not button.mouse_entered.is_connected(_on_button_mouse_entered):
+		button.mouse_entered.connect(_on_button_mouse_entered)
+	if not button.mouse_exited.is_connected(_on_button_mouse_exited):
+		button.mouse_exited.connect(_on_button_mouse_exited)
+
+
+func _on_button_mouse_entered() -> void:
+	set_cursor_hover()
+
+
+func _on_button_mouse_exited() -> void:
+	set_cursor_normal()
+
+
+## Cursor management
+func set_cursor_normal() -> void:
+	if cursor_normal:
+		Input.set_custom_mouse_cursor(cursor_normal, Input.CURSOR_ARROW, cursor_hotspot)
+
+
+func set_cursor_hover() -> void:
+	if cursor_hover:
+		Input.set_custom_mouse_cursor(cursor_hover, Input.CURSOR_ARROW, cursor_hotspot)
 
 
 func _process(delta: float) -> void:

@@ -99,6 +99,7 @@ func _on_mouse_entered() -> void:
 
 	is_hovered = true
 	set_visual_state(VisualState.HOVERED)
+	GameManager.set_cursor_hover()
 	hovered.emit(self, true)
 
 
@@ -108,6 +109,7 @@ func _on_mouse_exited() -> void:
 
 	is_hovered = false
 	set_visual_state(VisualState.NORMAL)
+	GameManager.set_cursor_normal()
 	hovered.emit(self, false)
 
 
@@ -138,6 +140,9 @@ func set_visual_state(state: VisualState) -> void:
 
 
 func reveal(was_correct: bool) -> void:
+	## Reset cursor since dancer is no longer clickable
+	if is_hovered:
+		GameManager.set_cursor_normal()
 	if was_correct:
 		set_visual_state(VisualState.REVEALED_CORRECT)
 	else:

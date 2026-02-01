@@ -1,11 +1,11 @@
 extends Control
 ## Main menu screen - entry point for the game.
 
-@onready var title_image: TextureRect = $MainVBox/TitleContainer/TitleImage
-@onready var play_button: Button = $MainVBox/ContentContainer/VBoxContainer/PlayButton
-@onready var options_button: Button = $MainVBox/ContentContainer/VBoxContainer/OptionsButton
-@onready var instructions_button: Button = $MainVBox/ContentContainer/VBoxContainer/InstructionsButton
-@onready var quit_button: Button = $MainVBox/ContentContainer/VBoxContainer/QuitButton
+@onready var title_image: TextureRect = $TitleImage
+@onready var play_button: Button = $ContentContainer/VBoxContainer/PlayButton
+@onready var options_button: Button = $ContentContainer/VBoxContainer/OptionsButton
+@onready var instructions_button: Button = $ContentContainer/VBoxContainer/InstructionsButton
+@onready var quit_button: Button = $ContentContainer/VBoxContainer/QuitButton
 @onready var options_menu: Control = $OptionsMenu
 @onready var instructions_popup: ColorRect = $InstructionsPopup
 

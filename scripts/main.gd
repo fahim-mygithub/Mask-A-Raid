@@ -1,13 +1,17 @@
 extends Node2D
 ## Main game scene - handles gameplay, dancers, and round logic.
 
-## Preload scenes
+## Preload scenes and scripts
 const DancerScene := preload("res://scenes/dancer.tscn")
 const LevelTransitionScene := preload("res://scenes/level_transition.tscn")
+const FireAnimationLoaderScript := preload("res://scripts/autoload/fire_animation_loader.gd")
 
 ## Node references
+@onready var background: Sprite2D = $Background
+@onready var trees_layer: Sprite2D = $TreesLayer
 @onready var dancer_path: Path2D = $GameArea/DancerPath
 @onready var dancers_container: Node2D = $GameArea/DancersContainer
+@onready var fire_pit: Node2D = $GameArea/FirePit
 @onready var hud: Control = $CanvasLayer/HUD
 @onready var timer_bar: ProgressBar = $CanvasLayer/HUD/TopBar/TimerBar
 @onready var score_label: Label = $CanvasLayer/HUD/TopBar/ScoreLabel
@@ -52,14 +56,33 @@ func _ready() -> void:
 	## Connect viewport resize signal
 	get_viewport().size_changed.connect(_on_viewport_resized)
 
+	## Setup background to fill viewport
+	_setup_background()
+
 	## Setup ellipse path for dancers
 	_setup_dancer_path()
+
+	## Setup animated fire
+	_setup_fire_animation()
 
 	## Create level transition overlay
 	_setup_level_transition()
 
 	## Show first level intro
 	_show_level_intro()
+
+
+func _process(_delta: float) -> void:
+	## Update dancer z-index based on Y position for depth effect
+	## Dancers at top (negative Y, behind fire) have lower z_index
+	## Dancers at bottom (positive Y, in front of fire) have higher z_index
+	for dancer in dancers:
+		if is_instance_valid(dancer):
+			## Map dancer's local Y position to z_index
+			## Y ranges roughly from -130 to +130 (radius_y)
+			## Map to z_index range of -5 to +5, with fire at 0
+			var local_y := dancer.position.y
+			dancer.z_index = int(local_y / 25.0)
 
 
 func _setup_level_transition() -> void:
@@ -69,22 +92,74 @@ func _setup_level_transition() -> void:
 	level_transition.countdown_finished.connect(_on_countdown_finished)
 
 
+func _setup_background() -> void:
+	## Scale background to fill viewport while maintaining aspect ratio
+	var viewport_size := get_viewport_rect().size
+	var texture_size := background.texture.get_size()
+
+	## Calculate scale to cover the entire viewport
+	var scale_x := viewport_size.x / texture_size.x
+	var scale_y := viewport_size.y / texture_size.y
+	var bg_scale: float = maxf(scale_x, scale_y)
+
+	background.scale = Vector2(bg_scale, bg_scale)
+
+	## Scale trees layer to match
+	if trees_layer and trees_layer.texture:
+		var trees_size := trees_layer.texture.get_size()
+		var trees_scale_x := viewport_size.x / trees_size.x
+		var trees_scale_y := viewport_size.y / trees_size.y
+		var trees_scale: float = maxf(trees_scale_x, trees_scale_y)
+		trees_layer.scale = Vector2(trees_scale, trees_scale)
+
+	print("[Main] Background scaled to: ", bg_scale)
+
+
+func _setup_fire_animation() -> void:
+	## Create AnimatedSprite2D for the fire
+	var fire_sprite := AnimatedSprite2D.new()
+	fire_sprite.name = "FireSprite"
+	fire_sprite.sprite_frames = FireAnimationLoaderScript.get_sprite_frames()
+	fire_sprite.animation = "fire"
+	fire_sprite.play()
+
+	## Scale fire to match concept art proportions
+	fire_sprite.scale = Vector2(0.7, 0.7)
+
+	## Position fire higher up (negative Y) to sit at the fire pit center
+	## Compensate for game area being at 68% viewport height
+	fire_sprite.position = Vector2(0, -115)
+
+	## Fire z_index at 0 - dancers will dynamically go behind/in front based on Y
+	fire_sprite.z_index = 0
+
+	## Make fire semi-transparent so dancers are visible through it
+	fire_sprite.modulate.a = 0.7
+
+	## Add to fire pit
+	fire_pit.add_child(fire_sprite)
+	print("[Main] Fire animation started")
+
+
 func _on_viewport_resized() -> void:
 	var viewport_size := get_viewport_rect().size
 	var game_area: Node2D = $GameArea
-	game_area.position = viewport_size / 2
+	game_area.position = Vector2(viewport_size.x / 2, viewport_size.y * 0.68)
+	_setup_background()
 	print("[Main] Viewport resized to: ", viewport_size)
 
 
 func _setup_dancer_path() -> void:
 	var viewport_size := get_viewport_rect().size
 	var game_area: Node2D = $GameArea
-	game_area.position = viewport_size / 2
+	## Position game area lower to match the painted ground oval
+	game_area.position = Vector2(viewport_size.x / 2, viewport_size.y * 0.68)
 
 	var curve := Curve2D.new()
 	var center := Vector2.ZERO
-	var radius_x := viewport_size.x * 0.28
-	var radius_y := viewport_size.y * 0.25
+	## Wider ellipse to match the painted ground oval
+	var radius_x := viewport_size.x * 0.38
+	var radius_y := viewport_size.y * 0.18
 	var segments := 32
 
 	for i in range(segments):

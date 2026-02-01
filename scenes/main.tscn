@@ -1,15 +1,21 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="Texture2D" path="res://assets/ingame_scene_assets/mask_a_raid_background_gameqlay_no_fire_ground.jpg" id="2_bg"]
+[ext_resource type="Texture2D" path="res://assets/ingame_scene_assets/mask_a_raid_background_gameqlay_trees.png" id="3_trees"]
 
 [node name="Main" type="Node2D" unique_id=535886802]
 script = ExtResource("1_main")
 
-[node name="Background" type="ColorRect" parent="." unique_id=363746796]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-color = Color(0.15, 0.1, 0.2, 1)
+[node name="Background" type="Sprite2D" parent="." unique_id=363746796]
+z_index = -10
+texture = ExtResource("2_bg")
+centered = false
+
+[node name="TreesLayer" type="Sprite2D" parent="."]
+z_index = 100
+texture = ExtResource("3_trees")
+centered = false
 
 [node name="GameArea" type="Node2D" parent="." unique_id=2113108269]
 

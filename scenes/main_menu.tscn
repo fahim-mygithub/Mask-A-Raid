@@ -1,11 +1,12 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dx2v50dwkbn52"]
 
-[ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_l6cm7"]
-[ext_resource type="Texture2D" path="res://assets/title_screen-assets/mask_a_raid_title_transparent.png" id="2_title"]
+[ext_resource type="Script" uid="uid://bkibjbodpomms" path="res://scripts/main_menu.gd" id="1_l6cm7"]
+[ext_resource type="Texture2D" uid="uid://blmpcf4blcpax" path="res://assets/title_screen-assets/mask_a_raid_title_transparent.png" id="2_title"]
 [ext_resource type="PackedScene" path="res://scenes/options_menu.tscn" id="3_options"]
-[ext_resource type="Texture2D" path="res://assets/title_screen-assets/Help_Menu.png" id="4_help"]
+[ext_resource type="Texture2D" uid="uid://qp2hxlgu0u1f" path="res://assets/title_screen-assets/Help_Menu.png" id="4_help"]
+[ext_resource type="Texture2D" uid="uid://b33cthvxellby" path="res://assets/title_screen-assets/title_fire_only.jpg" id="5_fire_bg"]
 
-[node name="root" type="Control"]
+[node name="root" type="Control" unique_id=790012264]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,115 +15,112 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_l6cm7")
 
-[node name="Background" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-color = Color(0.1, 0.08, 0.12, 1)
-
-[node name="MainVBox" type="VBoxContainer" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=2142848229]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 0
+texture = ExtResource("5_fire_bg")
+expand_mode = 1
+stretch_mode = 6
 
-[node name="TitleContainer" type="CenterContainer" parent="MainVBox"]
-layout_mode = 2
-size_flags_vertical = 3
-size_flags_stretch_ratio = 2.0
-
-[node name="TitleImage" type="TextureRect" parent="MainVBox/TitleContainer"]
-custom_minimum_size = Vector2(1600, 450)
-layout_mode = 2
+[node name="TitleImage" type="TextureRect" parent="." unique_id=327632167]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.075
+anchor_top = 0.02
+anchor_right = 0.925
+anchor_bottom = 0.5
+offset_left = -213.0
+offset_top = -6.3999996
+offset_right = 184.0
+offset_bottom = 325.0
+grow_horizontal = 2
 texture = ExtResource("2_title")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="ContentContainer" type="CenterContainer" parent="MainVBox"]
-layout_mode = 2
-size_flags_vertical = 3
-size_flags_stretch_ratio = 1.5
+[node name="ContentContainer" type="CenterContainer" parent="." unique_id=1271580644]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MainVBox/ContentContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="ContentContainer" unique_id=965424628]
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="Subtitle" type="Label" parent="MainVBox/ContentContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
-text = "Find the devils among the dancers"
-horizontal_alignment = 1
-
-[node name="Spacer" type="Control" parent="MainVBox/ContentContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 30)
-layout_mode = 2
-
-[node name="PlayButton" type="Button" parent="MainVBox/ContentContainer/VBoxContainer"]
+[node name="PlayButton" type="Button" parent="ContentContainer/VBoxContainer" unique_id=2000181340]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "Play"
 
-[node name="OptionsButton" type="Button" parent="MainVBox/ContentContainer/VBoxContainer"]
+[node name="OptionsButton" type="Button" parent="ContentContainer/VBoxContainer" unique_id=1260498720]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "Options"
 
-[node name="InstructionsButton" type="Button" parent="MainVBox/ContentContainer/VBoxContainer"]
+[node name="InstructionsButton" type="Button" parent="ContentContainer/VBoxContainer" unique_id=1448220368]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "Instructions"
 
-[node name="QuitButton" type="Button" parent="MainVBox/ContentContainer/VBoxContainer"]
+[node name="QuitButton" type="Button" parent="ContentContainer/VBoxContainer" unique_id=132194174]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "Quit"
 
-[node name="OptionsMenu" parent="." instance=ExtResource("3_options")]
+[node name="OptionsMenu" parent="." unique_id=1248659011 instance=ExtResource("3_options")]
 visible = false
+layout_mode = 1
 
-[node name="InstructionsPopup" type="ColorRect" parent="."]
+[node name="InstructionsPopup" type="ColorRect" parent="." unique_id=757943675]
 visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(0, 0, 0, 0.9)
 
-[node name="CenterContainer" type="CenterContainer" parent="InstructionsPopup"]
+[node name="CenterContainer" type="CenterContainer" parent="InstructionsPopup" unique_id=1893107159]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="VBox" type="VBoxContainer" parent="InstructionsPopup/CenterContainer"]
+[node name="VBox" type="VBoxContainer" parent="InstructionsPopup/CenterContainer" unique_id=1040957456]
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="HelpImage" type="TextureRect" parent="InstructionsPopup/CenterContainer/VBox"]
+[node name="HelpImage" type="TextureRect" parent="InstructionsPopup/CenterContainer/VBox" unique_id=454278013]
 custom_minimum_size = Vector2(1400, 700)
 layout_mode = 2
 texture = ExtResource("4_help")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="CloseButton" type="Button" parent="InstructionsPopup/CenterContainer/VBox"]
+[node name="CloseButton" type="Button" parent="InstructionsPopup/CenterContainer/VBox" unique_id=863854741]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 24
 text = "Close"
 
-[connection signal="pressed" from="MainVBox/ContentContainer/VBoxContainer/PlayButton" to="." method="_on_play_pressed"]
-[connection signal="pressed" from="MainVBox/ContentContainer/VBoxContainer/OptionsButton" to="." method="_on_options_pressed"]
-[connection signal="pressed" from="MainVBox/ContentContainer/VBoxContainer/InstructionsButton" to="." method="_on_instructions_pressed"]
-[connection signal="pressed" from="MainVBox/ContentContainer/VBoxContainer/QuitButton" to="." method="_on_quit_pressed"]
+[connection signal="pressed" from="ContentContainer/VBoxContainer/PlayButton" to="." method="_on_play_pressed"]
+[connection signal="pressed" from="ContentContainer/VBoxContainer/OptionsButton" to="." method="_on_options_pressed"]
+[connection signal="pressed" from="ContentContainer/VBoxContainer/InstructionsButton" to="." method="_on_instructions_pressed"]
+[connection signal="pressed" from="ContentContainer/VBoxContainer/QuitButton" to="." method="_on_quit_pressed"]
 [connection signal="pressed" from="InstructionsPopup/CenterContainer/VBox/CloseButton" to="." method="_on_instructions_close"]
