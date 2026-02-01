@@ -7,6 +7,8 @@ const LevelTransitionScene := preload("res://scenes/level_transition.tscn")
 const FireAnimationLoaderScript := preload("res://scripts/autoload/fire_animation_loader.gd")
 const SpearScene := preload("res://scenes/spear.tscn")
 const BallistaScene := preload("res://scenes/ballista.tscn")
+const DevilIconTexture := preload("res://assets/MaskAssets/hitmarkers/Transparent_Mask.png")
+const CrossOutTexture := preload("res://assets/MaskAssets/hitmarkers/RedSpearImpact005.png")
 
 ## Node references
 @onready var background: Sprite2D = $Background
@@ -26,6 +28,7 @@ const BallistaScene := preload("res://scenes/ballista.tscn")
 @onready var rule_text: Label = $CanvasLayer/HUD/RuleCornerBox/TextureRect/ContentMargin/VBox/RuleText
 @onready var devils_corner_box: Control = $CanvasLayer/HUD/DevilsCornerBox
 @onready var devils_counter: Label = $CanvasLayer/HUD/DevilsCornerBox/TextureRect/ContentMargin/VBox/DevilsCounter
+@onready var icon_container: Control = $CanvasLayer/HUD/DevilsCornerBox/IconContainer
 @onready var pause_overlay: ColorRect = $CanvasLayer/PauseOverlay
 @onready var resume_button: Button = $CanvasLayer/PauseOverlay/PauseMenu/VBox/ResumeButton
 @onready var quit_to_menu_button: Button = $CanvasLayer/PauseOverlay/PauseMenu/VBox/QuitButton
@@ -39,12 +42,19 @@ var dancers: Array[Dancer] = []
 var devils_remaining: int = 0
 var total_devils: int = 0
 
+## Devil icons UI
+var devil_icons: Array[TextureRect] = []
+
 ## Current level config
 var current_config: Dictionary = {}
 
 ## Game state
 var is_transitioning: bool = false
 var level_start_score: int = 0
+
+## Stored values for victory transition
+var pending_time_bonus: int = 0
+var pending_level_score: int = 0
 
 ## Ballista targeting system
 var ballista: Ballista = null
@@ -62,6 +72,10 @@ func _ready() -> void:
 	resume_button.pressed.connect(_on_resume_pressed)
 	quit_to_menu_button.pressed.connect(_on_quit_to_menu_pressed)
 	quit_game_button.pressed.connect(_on_quit_game_pressed)
+
+	## Hide quit game button on web (get_tree().quit() doesn't work on web)
+	if OS.has_feature("web"):
+		quit_game_button.visible = false
 
 	## Connect viewport resize signal
 	get_viewport().size_changed.connect(_on_viewport_resized)
@@ -103,6 +117,8 @@ func _setup_level_transition() -> void:
 	add_child(level_transition)
 	level_transition.continue_pressed.connect(_on_transition_continue)
 	level_transition.countdown_finished.connect(_on_countdown_finished)
+	level_transition.victory_splash_finished.connect(_on_victory_splash_finished)
+	level_transition.defeat_splash_finished.connect(_on_defeat_splash_finished)
 
 
 func _setup_ballista() -> void:
@@ -252,6 +268,9 @@ func _start_round() -> void:
 	GameManager.start_timer()
 	_start_level_music()
 
+	## Start fire crackle ambient
+	AudioManager.start_fire_ambient()
+
 
 func _clear_dancers() -> void:
 	for dancer in dancers:
@@ -260,6 +279,7 @@ func _clear_dancers() -> void:
 	dancers.clear()
 	devils_remaining = 0
 	total_devils = 0
+	_clear_devil_icons()
 
 
 func _spawn_dancers() -> void:
@@ -311,6 +331,7 @@ func _spawn_dancers() -> void:
 	total_devils = devil_count
 	devils_remaining = devil_count
 	_update_devils_counter()
+	_setup_devil_icons(devil_count)
 
 	## Give dancers reference to ballista for targeting
 	if ballista:
@@ -331,6 +352,7 @@ func _on_dancer_clicked(dancer: Dancer) -> void:
 		GameManager.on_correct_guess()
 		devils_remaining -= 1
 		_update_devils_counter()
+		_cross_out_next_icon()
 
 		## Check win condition
 		if devils_remaining <= 0:
@@ -347,7 +369,69 @@ func _on_dancer_hovered(_dancer: Dancer, _is_hovered: bool) -> void:
 
 
 func _update_devils_counter() -> void:
+	## Legacy text counter (hidden, kept for compatibility)
 	devils_counter.text = "Left: " + str(devils_remaining)
+
+
+func _setup_devil_icons(count: int) -> void:
+	## Clear any existing icons
+	_clear_devil_icons()
+
+	## Icon settings - icons in top-right semi-circle area
+	var icon_size := Vector2(70, 70)
+	var container_size := icon_container.size
+
+	## Constrain to stay within visible area (semi-circle in top-right)
+	var margin_right := 20.0  # Keep away from right edge
+	var margin_top := 30.0  # Keep away from top
+	var min_x := 60.0  # Don't go too far left (stay in corner)
+	var max_x := container_size.x - icon_size.x - margin_right
+	var min_y := margin_top
+	var max_y := 120.0  # Stay in upper portion
+
+	for i in range(count):
+		var icon := TextureRect.new()
+		icon.texture = DevilIconTexture
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.custom_minimum_size = icon_size
+		icon.size = icon_size
+
+		## Random position constrained to semi-circle area
+		var rand_x := randf_range(min_x, max_x)
+		var rand_y := randf_range(min_y, max_y)
+		icon.position = Vector2(rand_x, rand_y)
+
+		## Random slight rotation for organic look
+		icon.rotation_degrees = randf_range(-10, 10)
+
+		icon_container.add_child(icon)
+		devil_icons.append(icon)
+
+	print("[Main] Setup ", count, " devil icons")
+
+
+func _cross_out_next_icon() -> void:
+	## Find first icon without a cross-out overlay and add one
+	for icon in devil_icons:
+		if icon.get_child_count() == 0:
+			var cross := TextureRect.new()
+			cross.texture = CrossOutTexture
+			cross.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			cross.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			cross.size = Vector2(56, 56)  # Smaller than icon (70x70)
+			cross.position = Vector2(7, 7)  # Center on the 70x70 icon
+			icon.add_child(cross)
+			print("[Main] Crossed out devil icon")
+			return
+
+
+func _clear_devil_icons() -> void:
+	## Remove all devil icons from container
+	for icon in devil_icons:
+		if is_instance_valid(icon):
+			icon.queue_free()
+	devil_icons.clear()
 
 
 func _input(_event: InputEvent) -> void:
@@ -360,6 +444,9 @@ func _toggle_pause() -> void:
 		## Disable ballista when pausing
 		if ballista:
 			ballista.set_enabled(false)
+		## Stop ambient sounds while paused
+		AudioManager.stop_fire_ambient()
+		AudioManager.stop_nervous_loop()
 		GameManager.pause_game()
 		pause_overlay.visible = true
 		get_tree().paused = true
@@ -376,6 +463,8 @@ func _resume_game() -> void:
 	## Re-enable ballista
 	if ballista:
 		ballista.set_enabled(true)
+	## Resume fire ambient
+	AudioManager.start_fire_ambient()
 	print("[Main] Game resumed")
 
 
@@ -423,14 +512,21 @@ func _on_timer_expired() -> void:
 	print("[Main] Timer expired - round failed")
 	is_transitioning = true
 	_stop_level_music()
-	if lose_sound:
-		lose_sound.play()
+	## Stop ambient sounds
+	AudioManager.stop_fire_ambient()
+	AudioManager.stop_nervous_loop()
+	## Play through AudioManager so sound persists across scene change
+	AudioManager.play_sfx_from_path("res://assets/sound/bongoselect_WRONG.wav")
 	## Reveal remaining devils
 	for dancer in dancers:
 		if is_instance_valid(dancer) and dancer.is_devil and not dancer.is_revealed:
 			dancer.reveal(true)
-	## Wait a moment then go to game over
-	await get_tree().create_timer(2.0).timeout
+	## Wait a moment to see revealed devils, then show defeat splash
+	await get_tree().create_timer(1.5).timeout
+	level_transition.show_defeat_splash()
+
+
+func _on_defeat_splash_finished() -> void:
 	GameManager.end_game()
 	get_tree().change_scene_to_file("res://scenes/game_over.tscn")
 
@@ -438,24 +534,29 @@ func _on_timer_expired() -> void:
 func _on_level_complete() -> void:
 	is_transitioning = true
 	_stop_level_music()
-	if win_sound:
-		win_sound.play()
+	## Stop ambient sounds
+	AudioManager.stop_fire_ambient()
+	AudioManager.stop_nervous_loop()
 
-	## Calculate scores
-	var time_bonus := int(GameManager.time_remaining * 25)
-	var level_score := GameManager.score - level_start_score + time_bonus
+	## Calculate scores and store for after splash
+	pending_time_bonus = int(GameManager.time_remaining * 25)
+	pending_level_score = GameManager.score - level_start_score + pending_time_bonus
 
 	## Add time bonus
-	GameManager.add_score(time_bonus)
+	GameManager.add_score(pending_time_bonus)
 
+	## Show victory splash first (sounds handled by level_transition)
+	level_transition.show_victory_splash()
+
+
+func _on_victory_splash_finished() -> void:
 	## Check if this was the final level
 	if LevelConfig.is_final_level(GameManager.current_level):
 		print("[Main] Game complete! You win!")
-		await get_tree().create_timer(1.0).timeout
 		get_tree().change_scene_to_file("res://scenes/you_win.tscn")
 	else:
-		## Show level complete overlay
-		level_transition.show_level_complete(total_devils, total_devils, time_bonus, level_score)
+		## Show level complete overlay with stored scores
+		level_transition.show_level_complete(total_devils, total_devils, pending_time_bonus, pending_level_score)
 
 
 func _on_transition_continue() -> void:
@@ -508,6 +609,7 @@ func _on_spear_hit_dancer(dancer: Dancer) -> void:
 		GameManager.on_correct_guess()
 		devils_remaining -= 1
 		_update_devils_counter()
+		_cross_out_next_icon()
 
 		## Check win condition
 		if devils_remaining <= 0:
@@ -517,6 +619,8 @@ func _on_spear_hit_dancer(dancer: Dancer) -> void:
 	else:
 		print("[Main] Spear hit innocent dancer!")
 		GameManager.on_wrong_guess()
+		## Play devil laugh when hitting innocent
+		AudioManager.play_sfx_from_path("res://assets/sound/misc_effects/devilLAUGH.wav")
 
 
 func _on_spear_missed() -> void:

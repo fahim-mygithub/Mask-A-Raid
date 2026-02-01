@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Theme" path="res://themes/tribal_button_theme.tres" id="1_theme"]
-[ext_resource type="FontFile" path="res://assets/font/Papyrus.ttf" id="2_font"]
+[ext_resource type="FontFile" path="res://assets/font/Tribal-Regular.ttf" id="2_font"]
 
 [node name="TribalButton" type="Button"]
 custom_minimum_size = Vector2(250, 65)

@@ -6,7 +6,9 @@
 [ext_resource type="Texture2D" uid="uid://qp2hxlgu0u1f" path="res://assets/title_screen-assets/Help_Menu.png" id="4_help"]
 [ext_resource type="Texture2D" uid="uid://b33cthvxellby" path="res://assets/title_screen-assets/title_fire_only.jpg" id="5_fire_bg"]
 [ext_resource type="Theme" path="res://themes/tribal_button_theme.tres" id="6_tribal_theme"]
-[ext_resource type="FontFile" path="res://assets/font/Papyrus.ttf" id="7_papyrus"]
+[ext_resource type="FontFile" path="res://assets/font/Tribal-Regular.ttf" id="7_tribal"]
+[ext_resource type="PackedScene" path="res://scenes/ui/torch_button.tscn" id="8_torch_button"]
+[ext_resource type="FontFile" path="res://assets/font/Papyrus.ttf" id="9_papyrus"]
 
 [node name="root" type="Control" unique_id=790012264]
 layout_mode = 3
@@ -57,50 +59,71 @@ grow_vertical = 2
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="PlayButton" type="Button" parent="ContentContainer/VBoxContainer" unique_id=2000181340]
-custom_minimum_size = Vector2(220, 45)
+[node name="PlayButton" parent="ContentContainer/VBoxContainer" instance=ExtResource("8_torch_button")]
 layout_mode = 2
-size_flags_horizontal = 4
-theme = ExtResource("6_tribal_theme")
-theme_override_fonts/font = ExtResource("7_papyrus")
-theme_override_font_sizes/font_size = 28
-text = "PLAY"
+button_text = "PLAY"
+button_theme = ExtResource("6_tribal_theme")
+button_font = ExtResource("7_tribal")
+button_font_size = 28
 
-[node name="OptionsButton" type="Button" parent="ContentContainer/VBoxContainer" unique_id=1260498720]
-custom_minimum_size = Vector2(220, 45)
-layout_mode = 2
-size_flags_horizontal = 4
-theme = ExtResource("6_tribal_theme")
-theme_override_fonts/font = ExtResource("7_papyrus")
-theme_override_font_sizes/font_size = 28
-text = "SETTINGS"
+[node name="LeftTorch" parent="ContentContainer/VBoxContainer/PlayButton"]
+position = Vector2(65, 28)
 
-[node name="InstructionsButton" type="Button" parent="ContentContainer/VBoxContainer" unique_id=1448220368]
-custom_minimum_size = Vector2(220, 45)
-layout_mode = 2
-size_flags_horizontal = 4
-theme = ExtResource("6_tribal_theme")
-theme_override_fonts/font = ExtResource("7_papyrus")
-theme_override_font_sizes/font_size = 28
-text = "INSTRUCTIONS"
+[node name="RightTorch" parent="ContentContainer/VBoxContainer/PlayButton"]
+position = Vector2(330, 28)
 
-[node name="CreditsButton" type="Button" parent="ContentContainer/VBoxContainer" unique_id=1448220369]
-custom_minimum_size = Vector2(220, 45)
+[node name="OptionsButton" parent="ContentContainer/VBoxContainer" instance=ExtResource("8_torch_button")]
 layout_mode = 2
-size_flags_horizontal = 4
-theme = ExtResource("6_tribal_theme")
-theme_override_fonts/font = ExtResource("7_papyrus")
-theme_override_font_sizes/font_size = 28
-text = "CREDITS"
+button_text = "SETTINGS"
+button_theme = ExtResource("6_tribal_theme")
+button_font = ExtResource("7_tribal")
+button_font_size = 28
 
-[node name="QuitButton" type="Button" parent="ContentContainer/VBoxContainer" unique_id=132194174]
-custom_minimum_size = Vector2(220, 45)
+[node name="LeftTorch" parent="ContentContainer/VBoxContainer/OptionsButton"]
+position = Vector2(65, 28)
+
+[node name="RightTorch" parent="ContentContainer/VBoxContainer/OptionsButton"]
+position = Vector2(330, 28)
+
+[node name="InstructionsButton" parent="ContentContainer/VBoxContainer" instance=ExtResource("8_torch_button")]
 layout_mode = 2
-size_flags_horizontal = 4
-theme = ExtResource("6_tribal_theme")
-theme_override_fonts/font = ExtResource("7_papyrus")
-theme_override_font_sizes/font_size = 28
-text = "ALOHA"
+custom_minimum_size = Vector2(400, 55)
+button_text = "INSTRUCTIONS"
+button_theme = ExtResource("6_tribal_theme")
+button_font = ExtResource("7_tribal")
+button_font_size = 28
+
+[node name="LeftTorch" parent="ContentContainer/VBoxContainer/InstructionsButton"]
+position = Vector2(5, 28)
+
+[node name="RightTorch" parent="ContentContainer/VBoxContainer/InstructionsButton"]
+position = Vector2(395, 28)
+
+[node name="CreditsButton" parent="ContentContainer/VBoxContainer" instance=ExtResource("8_torch_button")]
+layout_mode = 2
+button_text = "CREDITS"
+button_theme = ExtResource("6_tribal_theme")
+button_font = ExtResource("7_tribal")
+button_font_size = 28
+
+[node name="LeftTorch" parent="ContentContainer/VBoxContainer/CreditsButton"]
+position = Vector2(65, 28)
+
+[node name="RightTorch" parent="ContentContainer/VBoxContainer/CreditsButton"]
+position = Vector2(330, 28)
+
+[node name="QuitButton" parent="ContentContainer/VBoxContainer" instance=ExtResource("8_torch_button")]
+layout_mode = 2
+button_text = "ALOHA"
+button_theme = ExtResource("6_tribal_theme")
+button_font = ExtResource("7_tribal")
+button_font_size = 28
+
+[node name="LeftTorch" parent="ContentContainer/VBoxContainer/QuitButton"]
+position = Vector2(65, 28)
+
+[node name="RightTorch" parent="ContentContainer/VBoxContainer/QuitButton"]
+position = Vector2(330, 28)
 
 [node name="OptionsMenu" parent="." unique_id=1248659011 instance=ExtResource("3_options")]
 visible = false
@@ -140,7 +163,7 @@ custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 size_flags_horizontal = 4
 theme = ExtResource("6_tribal_theme")
-theme_override_fonts/font = ExtResource("7_papyrus")
+theme_override_fonts/font = ExtResource("7_tribal")
 theme_override_font_sizes/font_size = 28
 text = "CLOSE"
 
@@ -164,32 +187,75 @@ grow_vertical = 2
 
 [node name="VBox" type="VBoxContainer" parent="CreditsPopup/CenterContainer"]
 layout_mode = 2
-theme_override_constants/separation = 30
+theme_override_constants/separation = 12
 
 [node name="CreditsTitle" type="Label" parent="CreditsPopup/CenterContainer/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("7_papyrus")
+theme_override_fonts/font = ExtResource("7_tribal")
 theme_override_font_sizes/font_size = 48
 theme_override_colors/font_color = Color(0.85, 0.6, 0.2, 1)
 text = "Credits"
 horizontal_alignment = 1
 
-[node name="CreditsText" type="Label" parent="CreditsPopup/CenterContainer/VBox"]
+[node name="TeamRosterHeader" type="Label" parent="CreditsPopup/CenterContainer/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("7_papyrus")
-theme_override_font_sizes/font_size = 24
+theme_override_fonts/font = ExtResource("7_tribal")
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.85, 0.6, 0.2, 1)
+text = "— TEAM ROSTER —"
+horizontal_alignment = 1
+
+[node name="TeamNames" type="Label" parent="CreditsPopup/CenterContainer/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("9_papyrus")
+theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.9, 0.8, 0.6, 1)
-text = "Game Design & Programming
-Team Mask-A-Raid
+text = "David Meza — Music & Sound FX
+Thomas Maung — Character & Mask Art
+KukuiOlelo — Backgrounds & Title Art
+JT — Font & UI Art
+Fahim — Programmer"
+horizontal_alignment = 1
 
-Art & Assets
-Custom Hand-Drawn Art
+[node name="VoicesHeader" type="Label" parent="CreditsPopup/CenterContainer/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("7_tribal")
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.85, 0.6, 0.2, 1)
+text = "— ADDITIONAL VOICES —"
+horizontal_alignment = 1
 
-Music & Sound
-Original Soundtrack
+[node name="VoiceNames" type="Label" parent="CreditsPopup/CenterContainer/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("9_papyrus")
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.9, 0.8, 0.6, 1)
+text = "Thomas M., KukuiOlelo, JT, Fahim"
+horizontal_alignment = 1
 
-Made for Global Game Jam 2025
-Theme: Mask"
+[node name="ThanksHeader" type="Label" parent="CreditsPopup/CenterContainer/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("7_tribal")
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.85, 0.6, 0.2, 1)
+text = "— SPECIAL THANKS —"
+horizontal_alignment = 1
+
+[node name="ThanksNames" type="Label" parent="CreditsPopup/CenterContainer/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("9_papyrus")
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.9, 0.8, 0.6, 1)
+text = "Henry Keane & Patrick Taggart
+Buffalo Game Space | UB Amatryx Gaming | UB Game Dev Club"
+horizontal_alignment = 1
+
+[node name="GameJamInfo" type="Label" parent="CreditsPopup/CenterContainer/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("7_tribal")
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.85, 0.6, 0.2, 1)
+text = "— Global Game Jam 2026 | Theme: Mask —"
 horizontal_alignment = 1
 
 [node name="CloseButton" type="Button" parent="CreditsPopup/CenterContainer/VBox"]
@@ -197,14 +263,15 @@ custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 size_flags_horizontal = 4
 theme = ExtResource("6_tribal_theme")
-theme_override_fonts/font = ExtResource("7_papyrus")
+theme_override_fonts/font = ExtResource("7_tribal")
 theme_override_font_sizes/font_size = 28
 text = "CLOSE"
 
-[connection signal="pressed" from="ContentContainer/VBoxContainer/PlayButton" to="." method="_on_play_pressed"]
-[connection signal="pressed" from="ContentContainer/VBoxContainer/OptionsButton" to="." method="_on_options_pressed"]
-[connection signal="pressed" from="ContentContainer/VBoxContainer/InstructionsButton" to="." method="_on_instructions_pressed"]
-[connection signal="pressed" from="ContentContainer/VBoxContainer/CreditsButton" to="." method="_on_credits_pressed"]
-[connection signal="pressed" from="ContentContainer/VBoxContainer/QuitButton" to="." method="_on_quit_pressed"]
+[connection signal="pressed" from="ContentContainer/VBoxContainer/PlayButton/Button" to="." method="_on_play_pressed"]
+[connection signal="pressed" from="ContentContainer/VBoxContainer/OptionsButton/Button" to="." method="_on_options_pressed"]
+[connection signal="pressed" from="ContentContainer/VBoxContainer/InstructionsButton/Button" to="." method="_on_instructions_pressed"]
+[connection signal="pressed" from="ContentContainer/VBoxContainer/CreditsButton/Button" to="." method="_on_credits_pressed"]
+[connection signal="pressed" from="ContentContainer/VBoxContainer/QuitButton/Button" to="." method="_on_quit_pressed"]
 [connection signal="pressed" from="InstructionsPopup/CenterContainer/VBox/CloseButton" to="." method="_on_instructions_close"]
 [connection signal="pressed" from="CreditsPopup/CenterContainer/VBox/CloseButton" to="." method="_on_credits_close"]
+[connection signal="gui_input" from="CreditsPopup" to="." method="_on_credits_popup_input"]

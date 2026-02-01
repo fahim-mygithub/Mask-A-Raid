@@ -148,6 +148,12 @@ func _on_hit_dancer(dancer: Dancer) -> void:
 	print("[Spear] Hit dancer! is_devil=", dancer.is_devil)
 	state = State.HIT
 
+	## Play layered hit sounds (spear impact + hurt reaction)
+	AudioManager.play_sfx_layered([
+		"res://assets/sound/spear/spear_hit.wav",
+		"res://assets/sound/spear/hurt.wav"
+	])
+
 	# Disable further collision (deferred to avoid signal blocking)
 	if hit_area:
 		hit_area.set_deferred("monitoring", false)
@@ -172,6 +178,9 @@ func _on_hit_dancer(dancer: Dancer) -> void:
 func _on_miss() -> void:
 	print("[Spear] Missed target")
 	state = State.MISSED
+
+	## Play miss sound (spear hitting ground)
+	AudioManager.play_sfx_from_path("res://assets/sound/spear/spear_miss.wav")
 
 	if hit_area:
 		hit_area.monitoring = false

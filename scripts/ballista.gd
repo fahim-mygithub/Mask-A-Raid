@@ -163,6 +163,11 @@ func _check_target_dancer() -> void:
 		targeted_dancer = new_target
 		if targeted_dancer:
 			targeted_dancer.set_visual_state(Dancer.VisualState.HOVERED)
+			## Start nervous loop when targeting a dancer
+			AudioManager.start_nervous_loop()
+		else:
+			## Stop nervous loop when not targeting anyone
+			AudioManager.stop_nervous_loop()
 
 		target_changed.emit(targeted_dancer)
 
@@ -191,6 +196,9 @@ func _release_fire() -> void:
 	if state != State.AIMING:
 		return
 
+	## Stop nervous loop when firing
+	AudioManager.stop_nervous_loop()
+
 	## Clear targeting
 	if targeted_dancer and is_instance_valid(targeted_dancer) and not targeted_dancer.is_revealed:
 		targeted_dancer.set_visual_state(Dancer.VisualState.NORMAL)
@@ -200,6 +208,9 @@ func _release_fire() -> void:
 
 	## Fire signal with target and arc
 	spear_fired.emit(target_position, arc_points)
+
+	## Play spear throw sound
+	AudioManager.play_sfx_from_path("res://assets/sound/spear/spear_throw.wav")
 
 	## Start cooldown
 	state = State.COOLDOWN

@@ -1,0 +1,32 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/torch_button.gd" id="1_script"]
+
+[node name="TorchButton" type="Control"]
+custom_minimum_size = Vector2(340, 55)
+layout_mode = 2
+script = ExtResource("1_script")
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -110.0
+offset_top = -22.5
+offset_right = 110.0
+offset_bottom = 22.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "BUTTON"
+
+[node name="LeftTorch" type="AnimatedSprite2D" parent="."]
+position = Vector2(35, 28)
+scale = Vector2(0.22, 0.22)
+
+[node name="RightTorch" type="AnimatedSprite2D" parent="."]
+position = Vector2(305, 28)
+scale = Vector2(0.22, 0.22)
+flip_h = true

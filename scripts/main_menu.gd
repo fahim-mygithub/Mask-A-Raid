@@ -2,11 +2,11 @@ extends Control
 ## Main menu screen - entry point for the game.
 
 @onready var title_image: TextureRect = $TitleImage
-@onready var play_button: Button = $ContentContainer/VBoxContainer/PlayButton
-@onready var options_button: Button = $ContentContainer/VBoxContainer/OptionsButton
-@onready var instructions_button: Button = $ContentContainer/VBoxContainer/InstructionsButton
-@onready var credits_button: Button = $ContentContainer/VBoxContainer/CreditsButton
-@onready var quit_button: Button = $ContentContainer/VBoxContainer/QuitButton
+@onready var play_button: TorchButton = $ContentContainer/VBoxContainer/PlayButton
+@onready var options_button: TorchButton = $ContentContainer/VBoxContainer/OptionsButton
+@onready var instructions_button: TorchButton = $ContentContainer/VBoxContainer/InstructionsButton
+@onready var credits_button: TorchButton = $ContentContainer/VBoxContainer/CreditsButton
+@onready var quit_button: TorchButton = $ContentContainer/VBoxContainer/QuitButton
 @onready var options_menu: Control = $OptionsMenu
 @onready var instructions_popup: ColorRect = $InstructionsPopup
 @onready var credits_popup: ColorRect = $CreditsPopup
@@ -26,8 +26,12 @@ func _ready() -> void:
 	options_menu.visible = false
 	options_menu.back_pressed.connect(_on_options_back)
 
+	## Hide quit button on web (get_tree().quit() doesn't work on web)
+	if OS.has_feature("web"):
+		quit_button.visible = false
+
 	## Focus the play button for keyboard navigation
-	play_button.grab_focus()
+	play_button.button.grab_focus()
 
 
 func _on_play_pressed() -> void:
@@ -48,7 +52,7 @@ func _on_options_pressed() -> void:
 func _on_options_back() -> void:
 	print("[MainMenu] Options closed")
 	options_menu.visible = false
-	options_button.grab_focus()
+	options_button.button.grab_focus()
 
 
 func _on_instructions_pressed() -> void:
@@ -59,7 +63,7 @@ func _on_instructions_pressed() -> void:
 func _on_instructions_close() -> void:
 	print("[MainMenu] Instructions closed")
 	instructions_popup.visible = false
-	instructions_button.grab_focus()
+	instructions_button.button.grab_focus()
 
 
 func _on_credits_pressed() -> void:
@@ -70,7 +74,14 @@ func _on_credits_pressed() -> void:
 func _on_credits_close() -> void:
 	print("[MainMenu] Credits closed")
 	credits_popup.visible = false
-	credits_button.grab_focus()
+	credits_button.button.grab_focus()
+
+
+func _on_credits_popup_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		var mouse_event := event as InputEventMouseButton
+		if mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_LEFT:
+			_on_credits_close()
 
 
 func _on_quit_pressed() -> void:

@@ -7,6 +7,7 @@ signal back_pressed
 @onready var music_value_label: Label = $PanelContainer/VBox/SettingsContainer/MusicRow/MusicValue
 @onready var sfx_slider: HSlider = $PanelContainer/VBox/SettingsContainer/SFXRow/SFXSlider
 @onready var sfx_value_label: Label = $PanelContainer/VBox/SettingsContainer/SFXRow/SFXValue
+@onready var window_row: HBoxContainer = $PanelContainer/VBox/SettingsContainer/WindowRow
 @onready var window_dropdown: OptionButton = $PanelContainer/VBox/SettingsContainer/WindowRow/WindowDropdown
 @onready var back_button: Button = $PanelContainer/VBox/BackButton
 
@@ -21,8 +22,13 @@ const WINDOW_PRESETS := [
 func _ready() -> void:
 	print("[OptionsMenu] Ready")
 
-	## Setup window dropdown
-	_setup_window_dropdown()
+	## Hide window controls on web (doesn't work in browser)
+	if OS.has_feature("web"):
+		window_row.visible = false
+	else:
+		## Setup window dropdown (desktop only)
+		_setup_window_dropdown()
+		window_dropdown.item_selected.connect(_on_window_selected)
 
 	## Initialize sliders from current AudioManager values
 	## Convert dB to linear (0-100 scale)
@@ -37,7 +43,6 @@ func _ready() -> void:
 	## Connect signals
 	music_slider.value_changed.connect(_on_music_slider_changed)
 	sfx_slider.value_changed.connect(_on_sfx_slider_changed)
-	window_dropdown.item_selected.connect(_on_window_selected)
 	back_button.pressed.connect(_on_back_pressed)
 
 	## Focus back button

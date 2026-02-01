@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Texture2D" path="res://assets/ingame_scene_assets/mask_a_raid_background_gameqlay_no_fire_ground.jpg" id="2_bg"]
 [ext_resource type="Texture2D" path="res://assets/ingame_scene_assets/mask_a_raid_background_gameqlay_trees.png" id="3_trees"]
+[ext_resource type="FontFile" path="res://assets/font/Tribal-Regular.ttf" id="4_tribal"]
 [ext_resource type="FontFile" path="res://assets/font/Papyrus.ttf" id="4_papyrus"]
 [ext_resource type="PackedScene" path="res://scenes/ui/corner_box.tscn" id="5_corner_box"]
 [ext_resource type="Texture2D" path="res://assets/ingame_scene_assets/Corner_Box.png" id="6_corner_texture"]
@@ -91,7 +92,7 @@ grow_horizontal = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
-theme_override_fonts/font = ExtResource("4_papyrus")
+theme_override_fonts/font = ExtResource("4_tribal")
 theme_override_font_sizes/font_size = 72
 text = "1:20"
 horizontal_alignment = 1
@@ -182,15 +183,15 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 80
-theme_override_constants/margin_top = 25
-theme_override_constants/margin_right = 20
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 50
 theme_override_constants/margin_bottom = 100
 
 [node name="VBox" type="VBoxContainer" parent="CanvasLayer/HUD/DevilsCornerBox/TextureRect/ContentMargin"]
 layout_mode = 2
 theme_override_constants/separation = 4
-alignment = 2
+alignment = 0
 
 [node name="DevilsTitle" type="Label" parent="CanvasLayer/HUD/DevilsCornerBox/TextureRect/ContentMargin/VBox"]
 layout_mode = 2
@@ -198,11 +199,12 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 2
 theme_override_fonts/font = ExtResource("4_papyrus")
-theme_override_font_sizes/font_size = 22
-text = "Imposters"
+theme_override_font_sizes/font_size = 18
+text = "Devils Remaining:"
 horizontal_alignment = 2
 
 [node name="DevilsCounter" type="Label" parent="CanvasLayer/HUD/DevilsCornerBox/TextureRect/ContentMargin/VBox"]
+visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -211,6 +213,17 @@ theme_override_fonts/font = ExtResource("4_papyrus")
 theme_override_font_sizes/font_size = 18
 text = "Left: 1"
 horizontal_alignment = 2
+
+[node name="IconContainer" type="Control" parent="CanvasLayer/HUD/DevilsCornerBox" unique_id=1847291055]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 50.0
+offset_top = 60.0
+offset_right = -20.0
+offset_bottom = -20.0
+mouse_filter = 2
 
 [node name="PauseOverlay" type="ColorRect" parent="CanvasLayer" unique_id=1909847211]
 visible = false

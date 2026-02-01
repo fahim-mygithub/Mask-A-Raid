@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://cxdancer001"]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/dancer.gd" id="1_dancer"]
 [ext_resource type="Texture2D" path="res://assets/MaskAssets/MaskBase.png" id="3_maskbase"]
@@ -6,30 +6,34 @@
 [sub_resource type="CircleShape2D" id="CircleShape2D_click"]
 radius = 70.0
 
-[node name="Dancer" type="PathFollow2D"]
+[node name="Dancer" type="PathFollow2D" unique_id=1244444110]
 rotates = false
 script = ExtResource("1_dancer")
 
-[node name="Body" type="AnimatedSprite2D" parent="."]
+[node name="Body" type="AnimatedSprite2D" parent="." unique_id=156042375]
 position = Vector2(0, 10)
 scale = Vector2(0.12, 0.12)
 
-[node name="MaskContainer" type="Node2D" parent="."]
+[node name="MaskContainer" type="Node2D" parent="." unique_id=1298048391]
 position = Vector2(0, -45)
 scale = Vector2(0.1, 0.1)
 
-[node name="MaskBase" type="Sprite2D" parent="MaskContainer"]
+[node name="MaskBase" type="Sprite2D" parent="MaskContainer" unique_id=133294017]
 texture = ExtResource("3_maskbase")
 
-[node name="Pattern" type="Sprite2D" parent="MaskContainer"]
+[node name="Pattern" type="Sprite2D" parent="MaskContainer" unique_id=1527361991]
 
-[node name="Horns" type="Sprite2D" parent="MaskContainer"]
+[node name="Horns" type="Sprite2D" parent="MaskContainer" unique_id=1422236760]
 visible = false
 
-[node name="ClickArea" type="Area2D" parent="."]
+[node name="SweatEffect" type="AnimatedSprite2D" parent="MaskContainer" unique_id=781084059]
+visible = false
+position = Vector2(0, 500)
+scale = Vector2(3, 3)
+
+[node name="ClickArea" type="Area2D" parent="." unique_id=1873916791]
 collision_layer = 4
 collision_mask = 2
-input_pickable = true
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="ClickArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ClickArea" unique_id=395001217]
 shape = SubResource("CircleShape2D_click")
