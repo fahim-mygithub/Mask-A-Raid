@@ -51,17 +51,14 @@ func _ready() -> void:
 
 
 func _on_mouse_entered() -> void:
-	print("[TorchButton] Mouse entered: ", button_text)
 	left_torch.play("burn")
 	right_torch.play("burn")
 
 
 func _on_mouse_exited() -> void:
-	print("[TorchButton] Mouse exited: ", button_text)
 	left_torch.play("idle")
 	right_torch.play("idle")
 
 
 func _on_button_pressed() -> void:
-	print("[TorchButton] Button pressed: ", button_text)
 	pressed.emit()
