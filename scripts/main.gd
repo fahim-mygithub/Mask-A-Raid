@@ -10,6 +10,8 @@ const FireAnimationLoaderScript := preload("res://scripts/autoload/fire_animatio
 @onready var background: Sprite2D = $Background
 @onready var trees_layer: Sprite2D = $TreesLayer
 @onready var level_music: AudioStreamPlayer = $LevelMusic
+@onready var win_sound: AudioStreamPlayer = $WinSound
+@onready var lose_sound: AudioStreamPlayer = $LoseSound
 @onready var dancer_path: Path2D = $GameArea/DancerPath
 @onready var dancers_container: Node2D = $GameArea/DancersContainer
 @onready var fire_pit: Node2D = $GameArea/FirePit
@@ -380,6 +382,8 @@ func _on_timer_expired() -> void:
 	print("[Main] Timer expired - round failed")
 	is_transitioning = true
 	_stop_level_music()
+	if lose_sound:
+		lose_sound.play()
 	## Reveal remaining devils
 	for dancer in dancers:
 		if dancer.is_devil and not dancer.is_revealed:
@@ -393,6 +397,8 @@ func _on_timer_expired() -> void:
 func _on_level_complete() -> void:
 	is_transitioning = true
 	_stop_level_music()
+	if win_sound:
+		win_sound.play()
 
 	## Calculate scores
 	var time_bonus := int(GameManager.time_remaining * 25)

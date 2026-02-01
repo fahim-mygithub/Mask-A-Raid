@@ -9,6 +9,7 @@ signal countdown_finished
 @onready var complete_panel: PanelContainer = $CompletePanel
 @onready var intro_panel: PanelContainer = $IntroPanel
 @onready var countdown_label: Label = $CountdownLabel
+@onready var countdown_sound: AudioStreamPlayer = $CountdownSound
 
 @onready var complete_title: Label = $CompletePanel/VBox/CompleteTitle
 @onready var devils_found_label: Label = $CompletePanel/VBox/DevilsFoundLabel
@@ -98,7 +99,11 @@ func _start_smooth_countdown() -> void:
 
 	## Countdown: 2 → 1 → GO!
 	tween.tween_interval(0.7)
-	tween.tween_callback(func(): countdown_label.text = "1")
+	tween.tween_callback(func():
+		countdown_label.text = "1"
+		if countdown_sound:
+			countdown_sound.play()
+	)
 	tween.tween_interval(0.7)
 	tween.tween_callback(func(): countdown_label.text = "GO!")
 	tween.tween_interval(0.4)
@@ -114,7 +119,11 @@ func show_countdown() -> void:
 
 	var tween := create_tween()
 	tween.tween_interval(0.7)
-	tween.tween_callback(func(): countdown_label.text = "1")
+	tween.tween_callback(func():
+		countdown_label.text = "1"
+		if countdown_sound:
+			countdown_sound.play()
+	)
 	tween.tween_interval(0.7)
 	tween.tween_callback(func(): countdown_label.text = "GO!")
 	tween.tween_interval(0.4)
