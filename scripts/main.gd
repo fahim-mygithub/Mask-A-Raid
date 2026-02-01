@@ -5,6 +5,8 @@ extends Node2D
 const DancerScene := preload("res://scenes/dancer.tscn")
 const LevelTransitionScene := preload("res://scenes/level_transition.tscn")
 const FireAnimationLoaderScript := preload("res://scripts/autoload/fire_animation_loader.gd")
+const SpearScene := preload("res://scenes/spear.tscn")
+const BallistaScene := preload("res://scenes/ballista.tscn")
 
 ## Node references
 @onready var background: Sprite2D = $Background
@@ -44,6 +46,9 @@ var current_config: Dictionary = {}
 var is_transitioning: bool = false
 var level_start_score: int = 0
 
+## Ballista targeting system
+var ballista: Ballista = null
+
 
 func _ready() -> void:
 	print("[Main] Game scene ready")
@@ -73,6 +78,9 @@ func _ready() -> void:
 	## Create level transition overlay
 	_setup_level_transition()
 
+	## Setup ballista targeting system
+	_setup_ballista()
+
 	## Show first level intro
 	_show_level_intro()
 
@@ -95,6 +103,20 @@ func _setup_level_transition() -> void:
 	add_child(level_transition)
 	level_transition.continue_pressed.connect(_on_transition_continue)
 	level_transition.countdown_finished.connect(_on_countdown_finished)
+
+
+func _setup_ballista() -> void:
+	ballista = BallistaScene.instantiate()
+
+	## Position at bottom center of viewport
+	var viewport_size := get_viewport_rect().size
+	ballista.position = Vector2(viewport_size.x / 2, viewport_size.y - 40)
+
+	## Connect signals
+	ballista.spear_fired.connect(_on_ballista_fired)
+
+	add_child(ballista)
+	print("[Main] Ballista setup complete")
 
 
 func _setup_background() -> void:
@@ -151,6 +173,9 @@ func _on_viewport_resized() -> void:
 	var game_area: Node2D = $GameArea
 	game_area.position = Vector2(viewport_size.x / 2, viewport_size.y * 0.68)
 	_setup_background()
+	## Reposition ballista
+	if ballista:
+		ballista.position = Vector2(viewport_size.x / 2, viewport_size.y - 40)
 	print("[Main] Viewport resized to: ", viewport_size)
 
 
@@ -182,6 +207,9 @@ func _setup_dancer_path() -> void:
 
 func _show_level_intro() -> void:
 	is_transitioning = true
+	## Disable ballista during transitions
+	if ballista:
+		ballista.set_enabled(false)
 	current_config = LevelConfig.get_level(GameManager.current_level)
 	level_transition.show_level_intro(GameManager.current_level, current_config)
 
@@ -202,6 +230,9 @@ func _show_level_intro() -> void:
 
 func _on_countdown_finished() -> void:
 	is_transitioning = false
+	## Enable ballista for gameplay
+	if ballista:
+		ballista.set_enabled(true)
 	_start_round()
 
 
@@ -281,6 +312,10 @@ func _spawn_dancers() -> void:
 	devils_remaining = devil_count
 	_update_devils_counter()
 
+	## Give dancers reference to ballista for targeting
+	if ballista:
+		ballista.dancers = dancers
+
 	print("[Main] Spawned ", dancer_count, " dancers, ", devil_count, " devils")
 
 
@@ -322,6 +357,9 @@ func _input(_event: InputEvent) -> void:
 
 func _toggle_pause() -> void:
 	if GameManager.current_state == GameManager.State.PLAYING:
+		## Disable ballista when pausing
+		if ballista:
+			ballista.set_enabled(false)
 		GameManager.pause_game()
 		pause_overlay.visible = true
 		get_tree().paused = true
@@ -335,6 +373,9 @@ func _resume_game() -> void:
 	GameManager.resume_game()
 	pause_overlay.visible = false
 	get_tree().paused = false
+	## Re-enable ballista
+	if ballista:
+		ballista.set_enabled(true)
 	print("[Main] Game resumed")
 
 
@@ -386,7 +427,7 @@ func _on_timer_expired() -> void:
 		lose_sound.play()
 	## Reveal remaining devils
 	for dancer in dancers:
-		if dancer.is_devil and not dancer.is_revealed:
+		if is_instance_valid(dancer) and dancer.is_devil and not dancer.is_revealed:
 			dancer.reveal(true)
 	## Wait a moment then go to game over
 	await get_tree().create_timer(2.0).timeout
@@ -438,3 +479,45 @@ func _stop_level_music() -> void:
 	if level_music and level_music.playing:
 		level_music.stop()
 		print("[Main] Level music stopped")
+
+
+## ============== BALLISTA TARGETING SYSTEM ==============
+
+func _on_ballista_fired(target_position: Vector2, arc_points: Array) -> void:
+	## Spawn spear and launch along the arc
+	var spear: Spear = SpearScene.instantiate()
+	add_child(spear)
+	spear.hit_dancer.connect(_on_spear_hit_dancer)
+	spear.missed.connect(_on_spear_missed)
+	spear.launch_along_arc(arc_points)
+	print("[Main] Ballista fired spear toward ", target_position)
+
+
+func _on_spear_hit_dancer(dancer: Dancer) -> void:
+	## Guard against accessing freed dancer (race condition with reveal animation)
+	if not is_instance_valid(dancer):
+		return
+	if dancer.is_revealed or is_transitioning:
+		return
+
+	var was_correct := dancer.is_devil
+	dancer.reveal(was_correct)
+
+	if was_correct:
+		print("[Main] Spear hit devil!")
+		GameManager.on_correct_guess()
+		devils_remaining -= 1
+		_update_devils_counter()
+
+		## Check win condition
+		if devils_remaining <= 0:
+			print("[Main] All devils found!")
+			GameManager.stop_timer()
+			_on_level_complete()
+	else:
+		print("[Main] Spear hit innocent dancer!")
+		GameManager.on_wrong_guess()
+
+
+func _on_spear_missed() -> void:
+	print("[Main] Spear missed!")

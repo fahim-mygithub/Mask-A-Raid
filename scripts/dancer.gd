@@ -36,10 +36,11 @@ func _ready() -> void:
 	_base_scale = scale
 	_hover_scale = _base_scale * 1.08
 
-	# Connect click area signals
-	click_area.input_event.connect(_on_click_area_input_event)
-	click_area.mouse_entered.connect(_on_mouse_entered)
-	click_area.mouse_exited.connect(_on_mouse_exited)
+	## Click area is now used for spear collision, not direct clicking
+	## Mouse hover signals kept for visual feedback when targeted by spear
+	# click_area.input_event.connect(_on_click_area_input_event)  # Disabled - using spear system
+	# click_area.mouse_entered.connect(_on_mouse_entered)  # Disabled - targeting handled by main
+	# click_area.mouse_exited.connect(_on_mouse_exited)  # Disabled - targeting handled by main
 
 	# Load dance animation frames (handles oversized spritesheet)
 	_load_dance_animation()

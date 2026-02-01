@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://cballista001"]
+
+[ext_resource type="Script" path="res://scripts/ballista.gd" id="1_ballista"]
+[ext_resource type="Texture2D" path="res://assets/ingame_scene_assets/Big_Tribal_Spear.png" id="2_spear"]
+
+[node name="Ballista" type="Node2D"]
+z_index = 100
+script = ExtResource("1_ballista")
+
+[node name="SpearSprite" type="Sprite2D" parent="."]
+position = Vector2(0, -60)
+scale = Vector2(0.35, 0.35)
+texture = ExtResource("2_spear")
