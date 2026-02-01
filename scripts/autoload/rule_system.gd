@@ -120,10 +120,10 @@ func select_rules_for_level(level: int) -> void:
 
 	if level >= 6:
 		max_difficulty = 3
-		rule_count = mini(3, 1 + (level - 6) / 2)
+		rule_count = mini(3, 1 + floori((level - 6) / 2.0))
 	elif level >= 3:
 		max_difficulty = 2
-		rule_count = 1 + (level - 3) / 2
+		rule_count = 1 + floori((level - 3) / 2.0)
 
 	rule_count = mini(rule_count, 3)
 

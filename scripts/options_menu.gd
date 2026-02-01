@@ -100,7 +100,8 @@ func _on_window_selected(index: int) -> void:
 		DisplayServer.window_set_size(window_size)
 		## Center the window
 		var screen_size: Vector2i = DisplayServer.screen_get_size()
-		var centered_pos: Vector2i = (screen_size - window_size) / 2
+		var diff := screen_size - window_size
+		var centered_pos := Vector2i(diff.x / 2, diff.y / 2)
 		DisplayServer.window_set_position(centered_pos)
 		print("[OptionsMenu] Window size after set: ", DisplayServer.window_get_size())
 
