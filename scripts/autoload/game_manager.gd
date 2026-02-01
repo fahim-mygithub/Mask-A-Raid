@@ -17,7 +17,7 @@ enum State { MENU, PLAYING, PAUSED, GAME_OVER }
 var current_state: State = State.MENU
 
 ## Timer configuration
-@export var round_duration: float = 60.0  ## Default round time in seconds
+@export var round_duration: float = 80.0  ## 1:20 to match music track length
 var time_remaining: float = 0.0
 var timer_active: bool = false
 

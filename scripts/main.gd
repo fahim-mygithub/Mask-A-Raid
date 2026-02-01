@@ -9,6 +9,7 @@ const FireAnimationLoaderScript := preload("res://scripts/autoload/fire_animatio
 ## Node references
 @onready var background: Sprite2D = $Background
 @onready var trees_layer: Sprite2D = $TreesLayer
+@onready var level_music: AudioStreamPlayer = $LevelMusic
 @onready var dancer_path: Path2D = $GameArea/DancerPath
 @onready var dancers_container: Node2D = $GameArea/DancersContainer
 @onready var fire_pit: Node2D = $GameArea/FirePit
@@ -214,8 +215,9 @@ func _start_round() -> void:
 	## Spawn dancers using level config
 	_spawn_dancers()
 
-	## Start the timer
+	## Start the timer and music
 	GameManager.start_timer()
+	_start_level_music()
 
 
 func _clear_dancers() -> void:
@@ -377,6 +379,7 @@ func _update_score_display() -> void:
 func _on_timer_expired() -> void:
 	print("[Main] Timer expired - round failed")
 	is_transitioning = true
+	_stop_level_music()
 	## Reveal remaining devils
 	for dancer in dancers:
 		if dancer.is_devil and not dancer.is_revealed:
@@ -389,6 +392,7 @@ func _on_timer_expired() -> void:
 
 func _on_level_complete() -> void:
 	is_transitioning = true
+	_stop_level_music()
 
 	## Calculate scores
 	var time_bonus := int(GameManager.time_remaining * 25)
@@ -414,3 +418,17 @@ func _on_transition_continue() -> void:
 
 	## Show next level intro
 	_show_level_intro()
+
+
+## Music control
+func _start_level_music() -> void:
+	if level_music:
+		level_music.seek(0.0)  ## Restart from beginning
+		level_music.play()
+		print("[Main] Level music started")
+
+
+func _stop_level_music() -> void:
+	if level_music and level_music.playing:
+		level_music.stop()
+		print("[Main] Level music stopped")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Texture2D" path="res://assets/ingame_scene_assets/mask_a_raid_background_gameqlay_no_fire_ground.jpg" id="2_bg"]
@@ -6,9 +6,14 @@
 [ext_resource type="FontFile" path="res://assets/font/Papyrus.ttf" id="4_papyrus"]
 [ext_resource type="PackedScene" path="res://scenes/ui/corner_box.tscn" id="5_corner_box"]
 [ext_resource type="Texture2D" path="res://assets/ingame_scene_assets/Corner_Box.png" id="6_corner_texture"]
+[ext_resource type="AudioStream" path="res://assets/ingame_scene_assets/levelmusic-maskaraid.mp3" id="7_music"]
 
 [node name="Main" type="Node2D" unique_id=535886802]
 script = ExtResource("1_main")
+
+[node name="LevelMusic" type="AudioStreamPlayer" parent="." unique_id=887264531]
+stream = ExtResource("7_music")
+volume_db = -6.0
 
 [node name="Background" type="Sprite2D" parent="." unique_id=363746796]
 z_index = -10
